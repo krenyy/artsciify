@@ -2,6 +2,26 @@
 #include <png.h>
 #include <vector>
 
+class ImageException : public std::exception {
+public:
+  ImageException(const char *msg) : m_msg(msg) {}
+  virtual const char *what() const throw() { return m_msg; }
+
+protected:
+  const char *m_msg;
+};
+
+class PngException : public ImageException {
+  using Self = PngException;
+  PngException(const char *msg) : ImageException(msg) {}
+
+public:
+  static Self read_struct() { return Self("Couldn't create PNG read struct!"); }
+  static Self info_struct() { return Self("Couldn't create PNG info struct!"); }
+  static Self read() { return Self("Error reading the PNG file!"); }
+  static Self open() { return Self("Error opening the PNG file!"); }
+};
+
 class PngImage {
 public:
   /* heavily inspired by:
@@ -9,21 +29,25 @@ public:
   static std::vector<std::vector<png_byte>> read_png(const char *filename) {
     png_structp png =
         png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-
-    if (!png)
-      abort();
+    if (!png) {
+      throw PngException::read_struct();
+    }
 
     png_infop info = png_create_info_struct(png);
+    if (!info) {
+      png_destroy_read_struct(&png, &info, NULL);
+      throw PngException::info_struct();
+    }
 
-    if (!info)
-      abort();
-
-    if (setjmp(png_jmpbuf(png)))
-      abort();
+    if (setjmp(png_jmpbuf(png))) {
+      png_destroy_read_struct(&png, &info, NULL);
+      throw PngException::read();
+    }
 
     FILE *fp = fopen(filename, "rb");
     if (!fp) {
-      abort();
+      png_destroy_read_struct(&png, &info, NULL);
+      throw PngException::open();
     }
 
     png_init_io(png, fp);
@@ -58,9 +82,10 @@ public:
 
     png_read_update_info(png, info);
 
-    png_bytep *row_pointers = (png_bytep *)malloc(sizeof(png_bytep) * height);
+    png_bytep *row_pointers = new png_bytep[height];
     for (int y = 0; y < height; y++) {
-      row_pointers[y] = (png_byte *)malloc(png_get_rowbytes(png, info));
+      row_pointers[y] =
+          new png_byte[png_get_rowbytes(png, info) / sizeof(png_byte)];
     }
 
     png_read_image(png, row_pointers);
@@ -71,10 +96,10 @@ public:
       for (int j = 0; j < width; ++j) {
         row.push_back(row_pointers[i][j]);
       }
-      free(row_pointers[i]);
+      delete[] row_pointers[i];
       pixels.push_back(row);
     }
-    free(row_pointers);
+    delete[] row_pointers;
 
     fclose(fp);
 
