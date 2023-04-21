@@ -54,8 +54,8 @@ public:
     png_init_io(png, fp);
     png_read_info(png, info);
 
-    int width = (int)png_get_image_width(png, info);
-    int height = (int)png_get_image_height(png, info);
+    png_uint_32 width = (int)png_get_image_width(png, info);
+    png_uint_32 height = (int)png_get_image_height(png, info);
     png_byte color_type = (int)png_get_color_type(png, info);
     png_byte bit_depth = (int)png_get_bit_depth(png, info);
 
@@ -84,7 +84,7 @@ public:
     png_read_update_info(png, info);
 
     png_bytep *row_pointers = new png_bytep[height];
-    for (int y = 0; y < height; y++) {
+    for (size_t y = 0; y < height; y++) {
       row_pointers[y] =
           new png_byte[png_get_rowbytes(png, info) / sizeof(png_byte)];
     }
@@ -92,9 +92,9 @@ public:
     png_read_image(png, row_pointers);
 
     std::vector<std::vector<png_byte>> pixels;
-    for (int i = 0; i < height; ++i) {
+    for (size_t i = 0; i < height; ++i) {
       std::vector<png_byte> row;
-      for (int j = 0; j < width; ++j) {
+      for (size_t j = 0; j < width; ++j) {
         row.push_back(row_pointers[i][j]);
       }
       delete[] row_pointers[i];
