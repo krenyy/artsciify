@@ -27,7 +27,8 @@ public:
   /* heavily inspired by:
    * https://web.archive.org/web/20230421230936/https://gist.github.com/niw/5963798
    */
-  static std::vector<std::vector<png_byte>> read_png(const char *filename) {
+  static std::vector<std::vector<std::vector<png_byte>>>
+  read_png(const char *filename) {
     png_structp png =
         png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png) {
@@ -88,17 +89,22 @@ public:
       row_pointers[y] =
           new png_byte[png_get_rowbytes(png, info) / sizeof(png_byte)];
     }
-
     png_read_image(png, row_pointers);
 
-    std::vector<std::vector<png_byte>> pixels;
-    for (size_t i = 0; i < height; ++i) {
-      std::vector<png_byte> row;
-      for (size_t j = 0; j < width; ++j) {
-        row.push_back(row_pointers[i][j]);
+    std::vector<std::vector<std::vector<png_byte>>> pixels;
+    for (size_t i = 0; i < 4; ++i) {
+      std::vector<std::vector<png_byte>> channel;
+      for (size_t j = 0; j < height; ++j) {
+        std::vector<png_byte> row;
+        for (size_t k = 0; k < width; ++k) {
+          row.push_back(row_pointers[j][k * 4 + i]);
+        }
+        channel.push_back(row);
       }
+      pixels.push_back(channel);
+    }
+    for (size_t i = 0; i < height; ++i) {
       delete[] row_pointers[i];
-      pixels.push_back(row);
     }
     delete[] row_pointers;
 
