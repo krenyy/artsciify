@@ -1,7 +1,7 @@
 NAME=artsciify
 
 CXX=g++
-CXXFLAGS=-std=c++17 -Wall -Wextra -Werror -Wpedantic -g -fsanitize=address
+CXXFLAGS=-std=c++17 -Wall -Wextra -Werror -Wpedantic -g -fsanitize=address -lpng
 
 TARGET=$(NAME)
 
