@@ -54,10 +54,10 @@ public:
     png_init_io(png, fp);
     png_read_info(png, info);
 
-    png_uint_32 width = (int)png_get_image_width(png, info);
-    png_uint_32 height = (int)png_get_image_height(png, info);
-    png_byte color_type = (int)png_get_color_type(png, info);
-    png_byte bit_depth = (int)png_get_bit_depth(png, info);
+    png_uint_32 width = png_get_image_width(png, info);
+    png_uint_32 height = png_get_image_height(png, info);
+    png_byte color_type = png_get_color_type(png, info);
+    png_byte bit_depth = png_get_bit_depth(png, info);
 
     if (bit_depth == 16)
       png_set_strip_16(png);
