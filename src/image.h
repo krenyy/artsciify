@@ -1,3 +1,6 @@
+#ifndef ARTSCIIFY_IMAGE_H
+#define ARTSCIIFY_IMAGE_H
+
 #include <optional>
 #include <png.h>
 #include <vector>
@@ -11,3 +14,5 @@ class PngImage {
 public:
   static std::optional<Image> read(const char *filename);
 };
+
+#endif
