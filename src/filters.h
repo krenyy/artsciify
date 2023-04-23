@@ -7,7 +7,13 @@ public:
 
 class Grayscale : public Filter {
 public:
+  Grayscale(double brightness_r, double brightness_g, double brightness_b);
   void apply(Image &img) const override;
+
+private:
+  double r;
+  double g;
+  double b;
 };
 
 class Negative : public Filter {
