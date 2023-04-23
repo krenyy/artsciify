@@ -14,22 +14,7 @@ std::string AsciiArt::print(const Image &img) const {
   return oss.str();
 }
 
-std::string GrayscaleBlockArt::print(const Image &img) const {
-  std::ostringstream oss;
-  size_t height = img[0].size(), width = img[0][0].size();
-  for (size_t i = 0; i < height; ++i) {
-    for (size_t j = 0; j < width; ++j) {
-      double brightness =
-          0.2126 * img[0][i][j] + 0.7152 * img[1][i][j] + 0.0722 * img[2][i][j];
-      oss << rgb_to_color_code(brightness, brightness, brightness) << " "
-          << "\033[0;0m";
-    }
-    oss << std::endl;
-  }
-  return oss.str();
-}
-
-std::string ColorBlockArt::print(const Image &img) const {
+std::string BlockArt::print(const Image &img) const {
   std::ostringstream oss;
   size_t height = img[0].size(), width = img[0][0].size();
   for (size_t i = 0; i < height; ++i) {

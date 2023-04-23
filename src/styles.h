@@ -16,12 +16,7 @@ public:
   std::string print(const Image &img) const override;
 };
 
-class GrayscaleBlockArt : public PrintStyle {
-public:
-  std::string print(const Image &img) const override;
-};
-
-class ColorBlockArt : public PrintStyle {
+class BlockArt : public PrintStyle {
 public:
   std::string print(const Image &img) const override;
 };
