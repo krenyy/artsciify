@@ -22,7 +22,7 @@ clean:
 create_build_dir:
 	mkdir -p $(BUILD_DIR)
 
-compile: create_build_dir $(OBJS)
+compile: create_build_dir $(BUILD_DIR)/main.o
 	$(CXX) -o $(TARGET) $(CXXFLAGS) $(OBJS)
 
 run: compile
@@ -31,5 +31,5 @@ run: compile
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-$(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp
+$(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp $(BUILD_DIR)/image.o
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
