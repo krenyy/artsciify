@@ -1,9 +1,12 @@
+#include "filters.h"
 #include "image.h"
 #include "styles.h"
 #include <iostream>
 
 int main() {
   auto x = PngImage::read("stepech.png");
-  std::cerr << GrayscaleBlockArt().print(x.value());
+  auto img = x.value();
+  Negative().apply(img);
+  std::cerr << ColorBlockArt().print(img);
   return 0;
 }

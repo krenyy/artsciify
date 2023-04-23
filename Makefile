@@ -31,7 +31,7 @@ run: compile
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-$(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp $(BUILD_DIR)/image.o $(BUILD_DIR)/styles.o
+$(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp $(BUILD_DIR)/image.o $(BUILD_DIR)/styles.o $(BUILD_DIR)/filters.o
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 $(BUILD_DIR)/styles.o: $(BUILD_DIR)/image.o
