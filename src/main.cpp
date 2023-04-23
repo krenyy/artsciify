@@ -1,10 +1,9 @@
 #include "image.h"
+#include "styles.h"
 #include <iostream>
-#include <optional>
-#include <vector>
-
 
 int main() {
   auto x = PngImage::read("stepech.png");
+  std::cerr << GrayscaleBlockArt().print(x.value());
   return 0;
 }
