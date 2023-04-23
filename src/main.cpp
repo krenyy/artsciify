@@ -1,55 +1,41 @@
 #include <iostream>
+#include <optional>
 #include <png.h>
 #include <vector>
 
-class ImageException : public std::exception {
-public:
-  ImageException(const char *msg) : m_msg(msg) {}
-  virtual const char *what() const throw() { return m_msg; }
 
-protected:
-  const char *m_msg;
-};
-
-class PngException : public ImageException {
-  using Self = PngException;
-  PngException(const char *msg) : ImageException(msg) {}
-
-public:
-  static Self read_struct() { return Self("Couldn't create PNG read struct!"); }
-  static Self info_struct() { return Self("Couldn't create PNG info struct!"); }
-  static Self read() { return Self("Error reading the PNG file!"); }
-  static Self open() { return Self("Error opening the PNG file!"); }
-};
+using ImagePixel = png_byte;
+using ImageRow = std::vector<ImagePixel>;
+using ImageChannel = std::vector<ImageRow>;
+using Image = std::vector<ImageChannel>;
 
 class PngImage {
 public:
   /* heavily inspired by:
    * https://web.archive.org/web/20230421230936/https://gist.github.com/niw/5963798
    */
-  static std::vector<std::vector<std::vector<png_byte>>>
-  read_png(const char *filename) {
+  static std::optional<Image> read(const char *filename) {
     png_structp png =
         png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png) {
-      throw PngException::read_struct();
+      return std::nullopt;
     }
 
     png_infop info = png_create_info_struct(png);
     if (!info) {
       png_destroy_read_struct(&png, &info, NULL);
-      throw PngException::info_struct();
+      return std::nullopt;
     }
 
     if (setjmp(png_jmpbuf(png))) {
       png_destroy_read_struct(&png, &info, NULL);
-      throw PngException::read();
+      return std::nullopt;
     }
 
     FILE *fp = fopen(filename, "rb");
     if (!fp) {
       png_destroy_read_struct(&png, &info, NULL);
-      throw PngException::open();
+      return std::nullopt;
     }
 
     png_init_io(png, fp);
@@ -91,17 +77,17 @@ public:
     }
     png_read_image(png, row_pointers);
 
-    std::vector<std::vector<std::vector<png_byte>>> pixels;
+    Image image;
     for (size_t i = 0; i < 4; ++i) {
-      std::vector<std::vector<png_byte>> channel;
+      ImageChannel channel;
       for (size_t j = 0; j < height; ++j) {
-        std::vector<png_byte> row;
+        ImageRow row;
         for (size_t k = 0; k < width; ++k) {
           row.push_back(row_pointers[j][k * 4 + i]);
         }
         channel.push_back(row);
       }
-      pixels.push_back(channel);
+      image.push_back(channel);
     }
     for (size_t i = 0; i < height; ++i) {
       delete[] row_pointers[i];
@@ -112,11 +98,11 @@ public:
 
     png_destroy_read_struct(&png, &info, NULL);
 
-    return pixels;
+    return image;
   }
 };
 
 int main() {
-  auto x = PngImage::read_png("stepech.png");
+  auto x = PngImage::read("stepech.png");
   return 0;
 }
