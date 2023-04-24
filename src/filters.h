@@ -14,9 +14,9 @@ public:
   void apply(Image &img) const override;
 
 private:
-  double r;
-  double g;
-  double b;
+  double br;
+  double bg;
+  double bb;
 };
 
 class Negative : public Filter {

@@ -3,14 +3,15 @@
 
 Grayscale::Grayscale(double brightness_r, double brightness_g,
                      double brightness_b)
-    : r(brightness_r), g(brightness_g), b(brightness_b) {}
+    : br(brightness_r), bg(brightness_g), bb(brightness_b) {}
 void Grayscale::apply(Image &img) const {
   size_t height = img[0].size(), width = img[0][0].size();
   for (size_t i = 0; i < height; ++i) {
     for (size_t j = 0; j < width; ++j) {
-      double px_brightness =
-          r * img[0][i][j] + g * img[1][i][j] + b * img[2][i][j];
-      img[0][i][j] = img[1][i][j] = img[2][i][j] = px_brightness;
+      ImagePixel &r = img[0][i][j];
+      ImagePixel &g = img[1][i][j];
+      ImagePixel &b = img[2][i][j];
+      r = g = b = br * r + bg * g + bb * b;
     }
   }
 }
