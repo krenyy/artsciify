@@ -17,6 +17,7 @@ public:
   class Map : public std::map<double, unsigned char> {
   public:
     static Map build(std::string characters, std::vector<double> brightnesses);
+    static Map standard();
     static Map eddie_smith();
   };
 

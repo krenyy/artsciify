@@ -34,6 +34,11 @@ AsciiArt::Map AsciiArt::Map::build(std::string characters,
   }
   return m;
 }
+// https://stackoverflow.com/a/67780964
+AsciiArt::Map AsciiArt::Map::standard() {
+  return build(".'`^\",:;Il!i><~+_-?][}{1)(|\\/"
+               "tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
+}
 // https://stackoverflow.com/a/74186686
 AsciiArt::Map AsciiArt::Map::eddie_smith() {
   return build(
