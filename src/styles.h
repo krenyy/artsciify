@@ -16,6 +16,15 @@ public:
   std::string print(const Image &img) const override;
 };
 
+class CharacterArt : public ArtStyle {
+public:
+  CharacterArt(const unsigned char character);
+  std::string print(const Image &img) const override;
+
+private:
+  unsigned char c;
+};
+
 class BlockArt : public ArtStyle {
 public:
   std::string print(const Image &img) const override;
