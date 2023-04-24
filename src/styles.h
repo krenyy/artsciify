@@ -6,17 +6,17 @@
 
 std::string rgb_to_color_code(const int r, const int g, const int b);
 
-class PrintStyle {
+class ArtStyle {
 public:
   virtual std::string print(const Image &img) const = 0;
 };
 
-class AsciiArt : public PrintStyle {
+class AsciiArt : public ArtStyle {
 public:
   std::string print(const Image &img) const override;
 };
 
-class BlockArt : public PrintStyle {
+class BlockArt : public ArtStyle {
 public:
   std::string print(const Image &img) const override;
 };
