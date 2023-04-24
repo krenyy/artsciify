@@ -2,6 +2,7 @@
 #define ARTSCIIFY_STYLES_H
 
 #include "image.h"
+#include <map>
 #include <sstream>
 
 std::string rgb_to_color_code(const int r, const int g, const int b);
@@ -13,7 +14,21 @@ public:
 
 class AsciiArt : public ArtStyle {
 public:
+  class Map : public std::map<double, unsigned char> {
+  public:
+    static Map build(std::vector<double> brightnesses, std::string characters);
+    static Map eddie_smith();
+  };
+
+  AsciiArt(const double brightness_r, const double brightness_g,
+           const double brightness_b, Map map);
   std::string print(const Image &img) const override;
+
+private:
+  double br;
+  double bg;
+  double bb;
+  Map m;
 };
 
 class CharacterArt : public ArtStyle {
