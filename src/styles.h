@@ -16,7 +16,7 @@ class AsciiArt : public ArtStyle {
 public:
   class Map : public std::map<double, unsigned char> {
   public:
-    static Map build(std::vector<double> brightnesses, std::string characters);
+    static Map build(std::string characters, std::vector<double> brightnesses);
     static Map eddie_smith();
   };
 
