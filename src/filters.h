@@ -20,3 +20,12 @@ class Negative : public Filter {
 public:
   void apply(Image &img) const override;
 };
+
+class Brightness : public Filter {
+public:
+  Brightness(double multiplier);
+  void apply(Image &img) const override;
+
+private:
+  double m;
+};

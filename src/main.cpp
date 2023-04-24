@@ -8,6 +8,7 @@ int main() {
   auto img = x.value();
   Negative().apply(img);
   Grayscale(0.2126, 0.7152, 0.0722).apply(img);
+  Brightness(.125).apply(img);
   std::cerr << BlockArt().print(img);
   return 0;
 }

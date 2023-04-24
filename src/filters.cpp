@@ -24,3 +24,15 @@ void Negative::apply(Image &img) const {
     }
   }
 }
+
+Brightness::Brightness(double multiplier) : m(multiplier) {}
+void Brightness::apply(Image &img) const {
+  for (auto &channel : img) {
+    for (auto &row : channel) {
+      for (auto &px : row) {
+        double tmp = px * m;
+        px = tmp > 255 ? 255 : tmp;
+      }
+    }
+  }
+}
