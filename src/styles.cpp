@@ -69,12 +69,8 @@ std::string AsciiArt::print(const Image &img) const {
       ImagePixel b = img[2][i][j];
       double px_brightness = (br * r + bg * g + bb * b) / 255;
       auto [begin, end] = m.equal_range(px_brightness);
-      if (begin == m.end()) {
+      if (begin == m.end() || end == m.end()) {
         oss << (--m.end())->second;
-        continue;
-      }
-      if (end == m.end()) {
-        oss << begin->second;
         continue;
       }
       oss << ((begin->first - px_brightness < end->first - px_brightness)
