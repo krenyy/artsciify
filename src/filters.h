@@ -1,3 +1,6 @@
+#ifndef ARTSCIIFY_FILTERS_H
+#define ARTSCIIFY_FILTERS_H
+
 #include "image.h"
 
 class Filter {
@@ -29,3 +32,5 @@ public:
 private:
   double m;
 };
+
+#endif
