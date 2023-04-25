@@ -1,6 +1,8 @@
 #include "styles.h"
 #include "image.h"
 #include <algorithm>
+#include <memory>
+#include <queue>
 #include <sstream>
 
 std::string rgb_to_fg_color_code(const int r, const int g, const int b) {
@@ -15,11 +17,14 @@ std::string rgb_to_bg_color_code(const int r, const int g, const int b) {
   return oss.str();
 }
 
-AsciiArt::AsciiArt(const double brightness_r, const double brightness_g,
-                   const double brightness_b, AsciiArt::Map map)
+AsciiCharTransform::AsciiCharTransform(const double brightness_r,
+                                       const double brightness_g,
+                                       const double brightness_b,
+                                       AsciiCharTransform::Map map)
     : br(brightness_r), bg(brightness_g), bb(brightness_b), m(map) {}
-AsciiArt::Map AsciiArt::Map::build(std::string characters,
-                                   std::vector<double> brightnesses = {}) {
+AsciiCharTransform::Map
+AsciiCharTransform::Map::build(std::string characters,
+                               std::vector<double> brightnesses = {}) {
   Map m;
   if (brightnesses.empty()) {
     for (size_t i = 0; i < characters.size(); ++i) {
@@ -35,12 +40,12 @@ AsciiArt::Map AsciiArt::Map::build(std::string characters,
   return m;
 }
 // https://stackoverflow.com/a/67780964
-AsciiArt::Map AsciiArt::Map::standard() {
+AsciiCharTransform::Map AsciiCharTransform::Map::standard() {
   return build(".'`^\",:;Il!i><~+_-?][}{1)(|\\/"
                "tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
 }
 // https://stackoverflow.com/a/74186686
-AsciiArt::Map AsciiArt::Map::eddie_smith() {
+AsciiCharTransform::Map AsciiCharTransform::Map::eddie_smith() {
   return build(
       " `.-':_,^=;><+!rc*/"
       "z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]"
@@ -59,53 +64,23 @@ AsciiArt::Map AsciiArt::Map::eddie_smith() {
 
   );
 }
-std::string AsciiArt::print(const Image &img) const {
-  std::ostringstream oss;
-  size_t height = img[0].size(), width = img[0][0].size();
-  for (size_t i = 0; i < height; ++i) {
-    for (size_t j = 0; j < width; ++j) {
-      ImagePixel r = img[0][i][j];
-      ImagePixel g = img[1][i][j];
-      ImagePixel b = img[2][i][j];
-      double px_brightness = (br * r + bg * g + bb * b) / 255;
-      auto [begin, end] = m.equal_range(px_brightness);
-      if (begin == m.end() || end == m.end()) {
-        oss << (--m.end())->second;
-        continue;
-      }
-      oss << ((begin->first - px_brightness < end->first - px_brightness)
-                  ? begin->second
-                  : end->second);
-    }
-    oss << std::endl;
-  }
-  return oss.str();
+unsigned char AsciiCharTransform::transform(const unsigned char r,
+                                            const unsigned char g,
+                                            const unsigned char b) const {
+  double px_brightness = (br * r + bg * g + bb * b) / 255;
+  auto [begin, end] = m.equal_range(px_brightness);
+  // returns a character which has the closest
+  // brightness value to the current pixel
+  return (begin == m.end() || end == m.end())
+             ? (--m.end())->second
+             : (((begin->first - px_brightness < end->first - px_brightness)
+                     ? begin->second
+                     : end->second));
 }
 
-CharacterArt::CharacterArt(const unsigned char character) : c(character) {}
-std::string CharacterArt::print(const Image &img) const {
-  std::ostringstream oss;
-  size_t height = img[0].size(), width = img[0][0].size();
-  for (size_t i = 0; i < height; ++i) {
-    for (size_t j = 0; j < width; ++j) {
-      oss << rgb_to_fg_color_code(img[0][i][j], img[1][i][j], img[2][i][j]) << c
-          << "\033[0;0m";
-    }
-    oss << std::endl;
-  }
-  return oss.str();
-}
-
-std::string BlockArt::print(const Image &img) const {
-  std::ostringstream oss;
-  size_t height = img[0].size(), width = img[0][0].size();
-  for (size_t i = 0; i < height; ++i) {
-    for (size_t j = 0; j < width; ++j) {
-      oss << rgb_to_bg_color_code(img[0][i][j], img[1][i][j], img[2][i][j])
-          << " "
-          << "\033[0;0m";
-    }
-    oss << std::endl;
-  }
-  return oss.str();
+ArtStyle ArtStyle::ascii_eddie_smith() {
+  return ArtStyle(
+      std::make_unique<AsciiCharTransform>(
+          0.2126, 0.7152, 0.0722, AsciiCharTransform::Map::eddie_smith()),
+      std::queue<std::unique_ptr<ColorTransform>>{{}});
 }
