@@ -18,6 +18,7 @@ BUILD_DIR=build
 
 SRCS=$(wildcard $(SRC_DIR)/*.cpp)
 OBJS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
+DEPS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRCS))
 
 .PHONY: all clean compile create_build_dir run
 .DEFAULT_GOAL=all
@@ -25,16 +26,18 @@ OBJS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 all: compile
 
 clean:
-	rm -rf Makefile.d $(TARGET) $(BUILD_DIR)
+	rm -rf $(TARGET) $(BUILD_DIR)
 
 create_build_dir:
 	mkdir -p $(BUILD_DIR)
 
-compile: create_build_dir $(OBJS)
-	$(LD) -o $(TARGET) $(LDFLAGS) $(OBJS)
+compile: $(TARGET)
 
 run: compile
 	./$(TARGET)
+
+$(TARGET): $(OBJS) | create_build_dir
+	$(LD) -o $(TARGET) $(LDFLAGS) $^
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h
 	$(CXX) $(CXXFLAGS) -o $@ $<
@@ -42,8 +45,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h
 $(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
-include Makefile.d
+include $(DEPS)
 
-Makefile.d: $(SRCS)
-	rm -f $@
-	$(foreach src,$(SRCS),$(CXX) -MM -MQ $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(src)) $(src) >> $@;)
+$(BUILD_DIR)/%.d: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h | create_build_dir
+	$(CXX) -MM -MQ $(patsubst $(BUILD_DIR)/%.d,$(BUILD_DIR)/%.o,$@) $< -MF $@
+
+$(BUILD_DIR)/main.d: $(SRC_DIR)/main.cpp | create_build_dir
+	$(CXX) -MM -MQ $(BUILD_DIR)/main.o $< -MF $@
