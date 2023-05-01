@@ -2,7 +2,6 @@
 #include "image.h"
 #include <algorithm>
 #include <memory>
-#include <queue>
 #include <sstream>
 
 std::string rgb_to_fg_color_code(const int r, const int g, const int b) {
@@ -17,13 +16,20 @@ std::string rgb_to_bg_color_code(const int r, const int g, const int b) {
   return oss.str();
 }
 
-AsciiCharTransform::AsciiCharTransform(const double brightness_r,
+StringTextTransform::StringTextTransform(std::string str) : s(str) {}
+void StringTextTransform::transform(std::string &str, const unsigned char,
+                                    const unsigned char,
+                                    const unsigned char) const {
+  str += s;
+}
+
+AsciiTextTransform::AsciiTextTransform(const double brightness_r,
                                        const double brightness_g,
                                        const double brightness_b,
-                                       AsciiCharTransform::Map map)
+                                       AsciiTextTransform::Map map)
     : br(brightness_r), bg(brightness_g), bb(brightness_b), m(map) {}
-AsciiCharTransform::Map
-AsciiCharTransform::Map::build(std::string characters,
+AsciiTextTransform::Map
+AsciiTextTransform::Map::build(std::string characters,
                                std::vector<double> brightnesses = {}) {
   Map m;
   if (brightnesses.empty()) {
@@ -40,12 +46,12 @@ AsciiCharTransform::Map::build(std::string characters,
   return m;
 }
 // https://stackoverflow.com/a/67780964
-AsciiCharTransform::Map AsciiCharTransform::Map::standard() {
+AsciiTextTransform::Map AsciiTextTransform::Map::standard() {
   return build(".'`^\",:;Il!i><~+_-?][}{1)(|\\/"
                "tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
 }
 // https://stackoverflow.com/a/74186686
-AsciiCharTransform::Map AsciiCharTransform::Map::eddie_smith() {
+AsciiTextTransform::Map AsciiTextTransform::Map::eddie_smith() {
   return build(
       " `.-':_,^=;><+!rc*/"
       "z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]"
@@ -64,23 +70,105 @@ AsciiCharTransform::Map AsciiCharTransform::Map::eddie_smith() {
 
   );
 }
-unsigned char AsciiCharTransform::transform(const unsigned char r,
-                                            const unsigned char g,
-                                            const unsigned char b) const {
+void AsciiTextTransform::transform(std::string &s, const unsigned char r,
+                                   const unsigned char g,
+                                   const unsigned char b) const {
   double px_brightness = (br * r + bg * g + bb * b) / 255;
   auto [begin, end] = m.equal_range(px_brightness);
   // returns a character which has the closest
   // brightness value to the current pixel
-  return (begin == m.end() || end == m.end())
-             ? (--m.end())->second
-             : (((begin->first - px_brightness < end->first - px_brightness)
-                     ? begin->second
-                     : end->second));
+  s += (begin == m.end() || end == m.end())
+           ? (--m.end())->second
+           : (((begin->first - px_brightness < end->first - px_brightness)
+                   ? begin->second
+                   : end->second));
 }
 
+void FromPixelForegroundColorTransform::transform(std::string &s,
+                                                  unsigned char r,
+                                                  unsigned char g,
+                                                  unsigned char b) const {
+  s.insert(0, rgb_to_fg_color_code(r, g, b));
+}
+void FromPixelBackgroundColorTransform::transform(std::string &s,
+                                                  unsigned char r,
+                                                  unsigned char g,
+                                                  unsigned char b) const {
+  s.insert(0, rgb_to_bg_color_code(r, g, b));
+}
+
+ForegroundColorTransform::ForegroundColorTransform(unsigned char r,
+                                                   unsigned char g,
+                                                   unsigned char b)
+    : r(r), g(g), b(b) {}
+void ForegroundColorTransform::transform(std::string &s, unsigned char,
+                                         unsigned char, unsigned char) const {
+  s.insert(0, rgb_to_fg_color_code(r, g, b));
+}
+
+BackgroundColorTransform::BackgroundColorTransform(unsigned char r,
+                                                   unsigned char g,
+                                                   unsigned char b)
+    : r(r), g(g), b(b) {}
+void BackgroundColorTransform::transform(std::string &s, unsigned char,
+                                         unsigned char, unsigned char) const {
+  s.insert(0, rgb_to_bg_color_code(r, g, b));
+}
+
+ArtStyle::ArtStyle(
+    std::shared_ptr<TextTransform> text_transform,
+    std::vector<std::shared_ptr<ColorTransform>> color_transforms)
+    : text_transform(text_transform), color_transforms(color_transforms) {}
+std::string ArtStyle::print(const Image &img) const {
+  size_t height = img[0].size();
+  size_t width = img[0][0].size();
+  std::ostringstream oss;
+  for (size_t i = 0; i < height; ++i) {
+    for (size_t j = 0; j < width; ++j) {
+      unsigned char r = img[0][i][j];
+      unsigned char g = img[1][i][j];
+      unsigned char b = img[2][i][j];
+      std::string s;
+      text_transform->transform(s, r, g, b);
+      for (const auto &t : color_transforms) {
+        t->transform(s, r, g, b);
+      }
+      oss << s;
+    }
+    if (!color_transforms.empty()) {
+      oss << "\033[0;0m";
+    }
+    oss << '\n';
+  }
+  return oss.str();
+}
+ArtStyle ArtStyle::ascii_standard() {
+  return ArtStyle(
+      std::make_shared<AsciiTextTransform>(0.2126, 0.7152, 0.0722,
+                                           AsciiTextTransform::Map::standard()),
+      {});
+}
+ArtStyle ArtStyle::ascii_standard_color() {
+  return ArtStyle(
+      std::make_shared<AsciiTextTransform>(0.2126, 0.7152, 0.0722,
+                                           AsciiTextTransform::Map::standard()),
+      {std::make_shared<FromPixelForegroundColorTransform>()});
+}
 ArtStyle ArtStyle::ascii_eddie_smith() {
   return ArtStyle(
-      std::make_unique<AsciiCharTransform>(
-          0.2126, 0.7152, 0.0722, AsciiCharTransform::Map::eddie_smith()),
-      std::queue<std::unique_ptr<ColorTransform>>{{}});
+      std::make_shared<AsciiTextTransform>(
+          0.2126, 0.7152, 0.0722, AsciiTextTransform::Map::eddie_smith()),
+      {});
+}
+ArtStyle ArtStyle::ascii_eddie_smith_color() {
+  return ArtStyle(
+      std::make_shared<AsciiTextTransform>(
+          0.2126, 0.7152, 0.0722, AsciiTextTransform::Map::eddie_smith()),
+      {std::make_shared<FromPixelForegroundColorTransform>()});
+}
+ArtStyle ArtStyle::block() {
+  return ArtStyle(std::make_shared<StringTextTransform>(" "),
+                  {
+                      std::make_shared<FromPixelBackgroundColorTransform>(),
+                  });
 }

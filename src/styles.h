@@ -4,25 +4,30 @@
 #include "image.h"
 #include <map>
 #include <memory>
-#include <queue>
 #include <sstream>
 
 std::string rgb_to_color_code(const int r, const int g, const int b);
 
-class CharTransform {
+class PixelTransform {
 public:
-  virtual unsigned char transform(unsigned char r, unsigned char g,
-                                  unsigned char b) const = 0;
+  virtual ~PixelTransform() = default;
+  virtual void transform(std::string &s, unsigned char r, unsigned char g,
+                         unsigned char b) const = 0;
+};
+class TextTransform : public PixelTransform {};
+class ColorTransform : public PixelTransform {};
+
+class StringTextTransform : public TextTransform {
+public:
+  StringTextTransform(std::string str);
+  void transform(std::string &str, const unsigned char r, const unsigned char g,
+                 const unsigned char b) const override;
+
+private:
+  std::string s;
 };
 
-class CharacterCharTransform : public CharTransform {
-public:
-  CharacterCharTransform(const unsigned char character);
-  unsigned char transform(const unsigned char r, const unsigned char g,
-                          const unsigned char b) const override;
-};
-
-class AsciiCharTransform : public CharTransform {
+class AsciiTextTransform : public TextTransform {
 public:
   class Map : public std::map<double, unsigned char> {
   public:
@@ -31,10 +36,10 @@ public:
     static Map eddie_smith();
   };
 
-  AsciiCharTransform(const double brightness_r, const double brightness_g,
+  AsciiTextTransform(const double brightness_r, const double brightness_g,
                      const double brightness_b, Map map);
-  unsigned char transform(const unsigned char r, const unsigned char g,
-                          const unsigned char b) const override;
+  void transform(std::string &s, const unsigned char r, const unsigned char g,
+                 const unsigned char b) const override;
 
 private:
   double br;
@@ -43,39 +48,57 @@ private:
   Map m;
 };
 
-class ColorTransform {
+class FromPixelForegroundColorTransform : public ColorTransform {
 public:
-  virtual std::string transform(unsigned char c, unsigned char r,
-                                unsigned char g, unsigned char b) const = 0;
+  void transform(std::string &s, unsigned char r, unsigned char g,
+                 unsigned char b) const override;
+};
+
+class FromPixelBackgroundColorTransform : public ColorTransform {
+public:
+  void transform(std::string &s, unsigned char r, unsigned char g,
+                 unsigned char b) const override;
 };
 
 class ForegroundColorTransform : public ColorTransform {
 public:
-  std::string transform(unsigned char s, unsigned char r, unsigned char g,
-                        unsigned char b) const override;
+  ForegroundColorTransform(unsigned char r, unsigned char g, unsigned char b);
+  void transform(std::string &s, unsigned char r, unsigned char g,
+                 unsigned char b) const override;
+
+private:
+  unsigned char r;
+  unsigned char g;
+  unsigned char b;
 };
 
 class BackgroundColorTransform : public ColorTransform {
 public:
-  std::string transform(unsigned char s, unsigned char r, unsigned char g,
-                        unsigned char b) const override;
+  BackgroundColorTransform(unsigned char r, unsigned char g, unsigned char b);
+  void transform(std::string &s, unsigned char r, unsigned char g,
+                 unsigned char b) const override;
+
+private:
+  unsigned char r;
+  unsigned char g;
+  unsigned char b;
 };
 
 class ArtStyle {
 public:
-  ArtStyle(std::unique_ptr<CharTransform> text_transform,
-           std::queue<std::unique_ptr<ColorTransform>> color_transforms);
+  ArtStyle(std::shared_ptr<TextTransform> text_transform,
+           std::vector<std::shared_ptr<ColorTransform>> color_transforms);
   static ArtStyle ascii_standard();
   static ArtStyle ascii_standard_color();
   static ArtStyle ascii_eddie_smith();
   static ArtStyle ascii_eddie_smith_color();
-  static ArtStyle character_art(const unsigned char c);
-  static ArtStyle block_art();
+  static ArtStyle character(const unsigned char c);
+  static ArtStyle block();
   std::string print(const Image &img) const;
 
 private:
-  std::unique_ptr<CharTransform> text_transform;
-  std::queue<std::unique_ptr<ColorTransform>> color_transforms;
+  std::shared_ptr<TextTransform> text_transform;
+  std::vector<std::shared_ptr<ColorTransform>> color_transforms;
 };
 
 #endif
