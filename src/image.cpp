@@ -66,17 +66,13 @@ std::optional<Image> PngImage::read(const char *filename) {
   }
   png_read_image(png, row_pointers);
 
-  Image image;
-  for (size_t i = 0; i < 4; ++i) {
-    ImageChannel channel;
+  Image image(height, width);
+  for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < height; ++j) {
-      ImageRow row;
       for (size_t k = 0; k < width; ++k) {
-        row.push_back(row_pointers[j][k * 4 + i]);
+        image[j][k][i] = row_pointers[j][k * 4 + i];
       }
-      channel.push_back(row);
     }
-    image.push_back(channel);
   }
   for (size_t i = 0; i < height; ++i) {
     delete[] row_pointers[i];

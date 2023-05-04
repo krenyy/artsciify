@@ -4,24 +4,22 @@
 #include <memory>
 #include <sstream>
 
-std::string rgb_to_fg_color_code(const int r, const int g, const int b) {
+std::string rgb_to_fg_color_code(const Color c) {
   std::ostringstream oss;
-  oss << "\033[38;2;" << r << ";" << g << ";" << b << "m";
+  oss << "\033[38;2;" << (int)c.r() << ";" << (int)c.g() << ";" << (int)c.b()
+      << "m";
   return oss.str();
 }
 
-std::string rgb_to_bg_color_code(const int r, const int g, const int b) {
+std::string rgb_to_bg_color_code(const Color c) {
   std::ostringstream oss;
-  oss << "\033[48;2;" << r << ";" << g << ";" << b << "m";
+  oss << "\033[48;2;" << (int)c.r() << ";" << (int)c.g() << ";" << (int)c.b()
+      << "m";
   return oss.str();
 }
 
 StringTextTransform::StringTextTransform(std::string str) : s(str) {}
-void StringTextTransform::transform(std::string &str, const unsigned char,
-                                    const unsigned char,
-                                    const unsigned char) const {
-  str += s;
-}
+void StringTextTransform::transform(std::string &str, Color) const { str += s; }
 
 AsciiTextTransform::AsciiTextTransform(const double brightness_r,
                                        const double brightness_g,
@@ -70,10 +68,9 @@ AsciiTextTransform::Map AsciiTextTransform::Map::eddie_smith() {
 
   );
 }
-void AsciiTextTransform::transform(std::string &s, const unsigned char r,
-                                   const unsigned char g,
-                                   const unsigned char b) const {
-  double px_brightness = (br * r + bg * g + bb * b) / 255;
+void AsciiTextTransform::transform(std::string &s, const Color pixel) const {
+  double px_brightness =
+      (br * pixel.r() + bg * pixel.g() + bb * pixel.b()) / 255;
   auto [begin, end] = m.equal_range(px_brightness);
   // returns a character which has the closest
   // brightness value to the current pixel
@@ -85,34 +82,24 @@ void AsciiTextTransform::transform(std::string &s, const unsigned char r,
 }
 
 void FromPixelForegroundColorTransform::transform(std::string &s,
-                                                  unsigned char r,
-                                                  unsigned char g,
-                                                  unsigned char b) const {
-  s.insert(0, rgb_to_fg_color_code(r, g, b));
+                                                  Color pixel) const {
+  s.insert(0, rgb_to_fg_color_code(pixel));
 }
 void FromPixelBackgroundColorTransform::transform(std::string &s,
-                                                  unsigned char r,
-                                                  unsigned char g,
-                                                  unsigned char b) const {
-  s.insert(0, rgb_to_bg_color_code(r, g, b));
+                                                  Color pixel) const {
+  s.insert(0, rgb_to_bg_color_code(pixel));
 }
 
-ForegroundColorTransform::ForegroundColorTransform(unsigned char r,
-                                                   unsigned char g,
-                                                   unsigned char b)
-    : r(r), g(g), b(b) {}
-void ForegroundColorTransform::transform(std::string &s, unsigned char,
-                                         unsigned char, unsigned char) const {
-  s.insert(0, rgb_to_fg_color_code(r, g, b));
+ForegroundColorTransform::ForegroundColorTransform(Color pixel)
+    : pixel(pixel) {}
+void ForegroundColorTransform::transform(std::string &s, Color) const {
+  s.insert(0, rgb_to_fg_color_code(pixel));
 }
 
-BackgroundColorTransform::BackgroundColorTransform(unsigned char r,
-                                                   unsigned char g,
-                                                   unsigned char b)
-    : r(r), g(g), b(b) {}
-void BackgroundColorTransform::transform(std::string &s, unsigned char,
-                                         unsigned char, unsigned char) const {
-  s.insert(0, rgb_to_bg_color_code(r, g, b));
+BackgroundColorTransform::BackgroundColorTransform(Color pixel)
+    : pixel(pixel) {}
+void BackgroundColorTransform::transform(std::string &s, Color) const {
+  s.insert(0, rgb_to_bg_color_code(pixel));
 }
 
 ArtStyle::ArtStyle(
@@ -120,18 +107,13 @@ ArtStyle::ArtStyle(
     std::vector<std::shared_ptr<ColorTransform>> color_transforms)
     : text_transform(text_transform), color_transforms(color_transforms) {}
 std::string ArtStyle::print(const Image &img) const {
-  size_t height = img[0].size();
-  size_t width = img[0][0].size();
   std::ostringstream oss;
-  for (size_t i = 0; i < height; ++i) {
-    for (size_t j = 0; j < width; ++j) {
-      unsigned char r = img[0][i][j];
-      unsigned char g = img[1][i][j];
-      unsigned char b = img[2][i][j];
+  for (auto &row : img) {
+    for (auto &pixel : row) {
       std::string s;
-      text_transform->transform(s, r, g, b);
+      text_transform->transform(s, pixel);
       for (const auto &t : color_transforms) {
-        t->transform(s, r, g, b);
+        t->transform(s, pixel);
       }
       oss << s;
     }

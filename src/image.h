@@ -2,26 +2,44 @@
 #define ARTSCIIFY_IMAGE_H
 
 #include <array>
+#include <cstdint>
 #include <optional>
 #include <png.h>
 #include <vector>
 
-struct Pixel {
-  std::array<unsigned char, 3> rgb;
-  unsigned char &r() { return rgb[0]; }
-  unsigned char &g() { return rgb[1]; }
-  unsigned char &b() { return rgb[2]; }
-  unsigned char r() const { return rgb[0]; }
-  unsigned char g() const { return rgb[1]; }
-  unsigned char b() const { return rgb[2]; }
-  unsigned char &operator[](const size_t i) { return rgb[i]; }
-  unsigned char operator[](const size_t i) const { return rgb[i]; }
+struct Color {
+  std::array<uint8_t, 3> rgb;
+  uint8_t &r() { return rgb[0]; }
+  uint8_t &g() { return rgb[1]; }
+  uint8_t &b() { return rgb[2]; }
+  uint8_t r() const { return rgb[0]; }
+  uint8_t g() const { return rgb[1]; }
+  uint8_t b() const { return rgb[2]; }
+  uint8_t &operator[](const size_t i) { return rgb[i]; }
+  uint8_t operator[](const size_t i) const { return rgb[i]; }
+  std::array<uint8_t, 3>::const_iterator begin() const { return rgb.begin(); }
+  std::array<uint8_t, 3>::const_iterator end() const { return rgb.end(); }
+  std::array<uint8_t, 3>::iterator begin() { return rgb.begin(); }
+  std::array<uint8_t, 3>::iterator end() { return rgb.end(); }
 };
 
-using ImagePixel = png_byte;
-using ImageRow = std::vector<ImagePixel>;
-using ImageChannel = std::vector<ImageRow>;
-using Image = std::vector<ImageChannel>;
+class Image {
+public:
+  using Row = std::vector<Color>;
+
+  Image(size_t height, size_t width) : image(height, Row(width)) {}
+  size_t height() const { return image.size(); }
+  size_t width() const { return image.empty() ? 0 : image.size(); }
+  Row &operator[](const size_t i) { return image[i]; }
+  Row operator[](const size_t i) const { return image[i]; }
+  std::vector<Row>::const_iterator begin() const { return image.begin(); }
+  std::vector<Row>::const_iterator end() const { return image.end(); }
+  std::vector<Row>::iterator begin() { return image.begin(); }
+  std::vector<Row>::iterator end() { return image.end(); }
+
+private:
+  std::vector<Row> image;
+};
 
 class PngImage {
 public:

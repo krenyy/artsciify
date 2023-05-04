@@ -6,13 +6,12 @@
 #include <memory>
 #include <sstream>
 
-std::string rgb_to_color_code(const int r, const int g, const int b);
+std::string rgb_to_fg_color_code(const Color c);
 
 class PixelTransform {
 public:
   virtual ~PixelTransform() = default;
-  virtual void transform(std::string &s, unsigned char r, unsigned char g,
-                         unsigned char b) const = 0;
+  virtual void transform(std::string &s, const Color pixel) const = 0;
 };
 class TextTransform : public PixelTransform {};
 class ColorTransform : public PixelTransform {};
@@ -20,8 +19,7 @@ class ColorTransform : public PixelTransform {};
 class StringTextTransform : public TextTransform {
 public:
   StringTextTransform(std::string str);
-  void transform(std::string &str, const unsigned char r, const unsigned char g,
-                 const unsigned char b) const override;
+  void transform(std::string &str, const Color pixel) const override;
 
 private:
   std::string s;
@@ -38,8 +36,7 @@ public:
 
   AsciiTextTransform(const double brightness_r, const double brightness_g,
                      const double brightness_b, Map map);
-  void transform(std::string &s, const unsigned char r, const unsigned char g,
-                 const unsigned char b) const override;
+  void transform(std::string &s, const Color pixel) const;
 
 private:
   double br;
@@ -50,38 +47,30 @@ private:
 
 class FromPixelForegroundColorTransform : public ColorTransform {
 public:
-  void transform(std::string &s, unsigned char r, unsigned char g,
-                 unsigned char b) const override;
+  void transform(std::string &s, const Color pixel) const override;
 };
 
 class FromPixelBackgroundColorTransform : public ColorTransform {
 public:
-  void transform(std::string &s, unsigned char r, unsigned char g,
-                 unsigned char b) const override;
+  void transform(std::string &s, const Color pixel) const override;
 };
 
 class ForegroundColorTransform : public ColorTransform {
 public:
-  ForegroundColorTransform(unsigned char r, unsigned char g, unsigned char b);
-  void transform(std::string &s, unsigned char r, unsigned char g,
-                 unsigned char b) const override;
+  ForegroundColorTransform(const Color pixel);
+  void transform(std::string &s, const Color pixel) const override;
 
 private:
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
+  Color pixel;
 };
 
 class BackgroundColorTransform : public ColorTransform {
 public:
-  BackgroundColorTransform(unsigned char r, unsigned char g, unsigned char b);
-  void transform(std::string &s, unsigned char r, unsigned char g,
-                 unsigned char b) const override;
+  BackgroundColorTransform(const Color pixel);
+  void transform(std::string &s, const Color pixel) const override;
 
 private:
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
+  Color pixel;
 };
 
 class ArtStyle {
