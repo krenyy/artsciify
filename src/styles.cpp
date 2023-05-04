@@ -82,21 +82,21 @@ void AsciiTextTransform::transform(std::string &s, const Color pixel) const {
 }
 
 void FromPixelForegroundColorTransform::transform(std::string &s,
-                                                  Color pixel) const {
+                                                  const Color pixel) const {
   s.insert(0, rgb_to_fg_color_code(pixel));
 }
 void FromPixelBackgroundColorTransform::transform(std::string &s,
-                                                  Color pixel) const {
+                                                  const Color pixel) const {
   s.insert(0, rgb_to_bg_color_code(pixel));
 }
 
-ForegroundColorTransform::ForegroundColorTransform(Color pixel)
+ForegroundColorTransform::ForegroundColorTransform(const Color pixel)
     : pixel(pixel) {}
 void ForegroundColorTransform::transform(std::string &s, Color) const {
   s.insert(0, rgb_to_fg_color_code(pixel));
 }
 
-BackgroundColorTransform::BackgroundColorTransform(Color pixel)
+BackgroundColorTransform::BackgroundColorTransform(const Color pixel)
     : pixel(pixel) {}
 void BackgroundColorTransform::transform(std::string &s, Color) const {
   s.insert(0, rgb_to_bg_color_code(pixel));
