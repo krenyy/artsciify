@@ -1,14 +1,15 @@
+#include "config.h"
 #include "filters.h"
 #include "image.h"
 #include "styles.h"
 #include <iostream>
 #include <memory>
 
-int main(int argc, char **argv) {
-  std::cerr << argc << std::endl;
-  for (int i = 0; i < argc; ++i) {
-    std::cerr << "  " << argv[i] << std::endl;
-  }
+int main(int, char **argv) {
+  std::string relative_program_path = argv[0];
+  std::string relative_program_parent_dir =
+      relative_program_path.substr(0, relative_program_path.find_last_of('/'));
+  auto conf = Config::load(relative_program_parent_dir + "/artsciify.conf");
   auto x = PngImage::read("pepa.png");
   auto img = x.value();
   // Negative().apply(img);
@@ -21,6 +22,6 @@ int main(int argc, char **argv) {
   //                  })
   //                  .print(img);
   // std::cerr << ArtStyle::ascii_eddie_smith().print(img);
-  std::cerr << ArtStyle::ascii_eddie_smith_color().print(img);
+  // std::cerr << ArtStyle::ascii_eddie_smith_color().print(img);
   return 0;
 }
