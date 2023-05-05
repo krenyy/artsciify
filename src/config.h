@@ -119,6 +119,54 @@ public:
         }
         c.gradients.emplace(name,
                             AsciiTextTransform::Map::build(gradient, weights));
+      } else if (buf == "luminance") {
+        std::string name;
+        iss >> name;
+        if (name.size() == 0) {
+          throw std::logic_error("Missing luminance name! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        for (const char c : name) {
+          if (!std::isprint(c)) {
+            throw std::logic_error(
+                "A luminance name must contain only printable characters! (at line "s +
+                std::to_string(cr.get_current_line()) + ")");
+          }
+        }
+        if (c.luminances.count(name)) {
+          throw std::logic_error("A luminance with the name '" + name +
+                                 "' already exists! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        buf.clear();
+        iss >> buf;
+        if (buf.size()) {
+          throw std::logic_error("Unexpected symbol '" + buf + "'! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        line_opt = cr.read_line();
+        if (!line_opt.has_value()) {
+          throw std::logic_error("Unexpected EOF! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        line = *line_opt;
+        iss = std::istringstream(std::move(line));
+        double r, g, b;
+        if (!(iss >> r)) {
+          throw std::logic_error("Missing luminance value for red! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        if (!(iss >> g)) {
+          throw std::logic_error(
+              "Missing luminance value for green! (at line "s +
+              std::to_string(cr.get_current_line()) + ")");
+        }
+        if (!(iss >> b)) {
+          throw std::logic_error(
+              "Missing luminance value for blue! (at line "s +
+              std::to_string(cr.get_current_line()) + ")");
+        }
+        c.luminances.emplace(name, std::make_tuple(r, g, b));
       } else {
         throw std::logic_error("Unexpected symbol '" + buf + "'! (at line "s +
                                std::to_string(cr.get_current_line()) + ")");
@@ -137,4 +185,5 @@ public:
 
 private:
   std::map<std::string, AsciiTextTransform::Map> gradients;
+  std::map<std::string, std::tuple<double, double, double>> luminances;
 };
