@@ -75,11 +75,11 @@ public:
         for (const char c : name) {
           if (!std::isprint(c)) {
             throw std::logic_error(
-                "Name must contain only printable characters! (at line "s +
+                "A gradient name must contain only printable characters! (at line "s +
                 std::to_string(r.get_current_line()) + ")");
           }
         }
-        if (c.ascii_gradients.count(name)) {
+        if (c.gradients.count(name)) {
           throw std::logic_error("A gradient with the name '" + name +
                                  "' already exists! (at line "s +
                                  std::to_string(r.get_current_line()) + ")");
@@ -117,15 +117,15 @@ public:
             weights.push_back(weight);
           }
         }
-        c.ascii_gradients.emplace(
-            name, AsciiTextTransform::Map::build(gradient, weights));
+        c.gradients.emplace(name,
+                            AsciiTextTransform::Map::build(gradient, weights));
       } else {
         throw std::logic_error("Syntax error! (at line "s +
                                std::to_string(r.get_current_line()) + ")");
       }
     }
     std::cerr << "*** WHAT HAS BEEN PARSED?" << std::endl;
-    for (const auto &[x, y] : c.ascii_gradients) {
+    for (const auto &[x, y] : c.gradients) {
       std::cerr << "  " << '"' << x << '"' << ": " << std::endl;
       for (const auto &[z, w] : y) {
         std::cerr << "    " << z << ": " << w << std::endl;
@@ -136,5 +136,5 @@ public:
   }
 
 private:
-  std::map<std::string, AsciiTextTransform::Map> ascii_gradients;
+  std::map<std::string, AsciiTextTransform::Map> gradients;
 };
