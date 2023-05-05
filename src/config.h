@@ -51,10 +51,10 @@ public:
     if (!ro.has_value()) {
       return std::nullopt;
     }
-    ConfigReader r = std::move(*ro);
+    ConfigReader cr = std::move(*ro);
     Config c;
     while (true) {
-      auto line_opt = r.read_line();
+      auto line_opt = cr.read_line();
       if (!line_opt.has_value()) {
         break;
       }
@@ -70,43 +70,43 @@ public:
         iss >> name;
         if (name.size() == 0) {
           throw std::logic_error("Missing gradient name! (at line "s +
-                                 std::to_string(r.get_current_line()) + ")");
+                                 std::to_string(cr.get_current_line()) + ")");
         }
         for (const char c : name) {
           if (!std::isprint(c)) {
             throw std::logic_error(
                 "A gradient name must contain only printable characters! (at line "s +
-                std::to_string(r.get_current_line()) + ")");
+                std::to_string(cr.get_current_line()) + ")");
           }
         }
         if (c.gradients.count(name)) {
           throw std::logic_error("A gradient with the name '" + name +
                                  "' already exists! (at line "s +
-                                 std::to_string(r.get_current_line()) + ")");
+                                 std::to_string(cr.get_current_line()) + ")");
         }
         buf.clear();
         iss >> buf;
         if (buf.size()) {
           throw std::logic_error("Unexpected symbol '" + buf + "'! (at line "s +
-                                 std::to_string(r.get_current_line()) + ")");
+                                 std::to_string(cr.get_current_line()) + ")");
         }
-        auto gradient_opt = r.read_line();
+        auto gradient_opt = cr.read_line();
         if (!gradient_opt.has_value()) {
           throw std::logic_error("Couldn't parse gradient! (at line "s +
-                                 std::to_string(r.get_current_line()) + ")");
+                                 std::to_string(cr.get_current_line()) + ")");
         }
         std::string gradient = *gradient_opt;
         for (const char c : gradient) {
           if (!std::isprint(c)) {
             throw std::logic_error(
                 "Gradient must contain only printable characters! (at line "s +
-                std::to_string(r.get_current_line()) + ")");
+                std::to_string(cr.get_current_line()) + ")");
           }
         }
-        line_opt = r.read_line();
+        line_opt = cr.read_line();
         if (!line_opt.has_value()) {
           throw std::logic_error("Unexpected EOF! (at line "s +
-                                 std::to_string(r.get_current_line()) + ")");
+                                 std::to_string(cr.get_current_line()) + ")");
         }
         line = *line_opt;
         std::vector<double> weights;
@@ -121,7 +121,7 @@ public:
                             AsciiTextTransform::Map::build(gradient, weights));
       } else {
         throw std::logic_error("Unexpected symbol '" + buf + "'! (at line "s +
-                               std::to_string(r.get_current_line()) + ")");
+                               std::to_string(cr.get_current_line()) + ")");
       }
     }
     std::cerr << "*** WHAT HAS BEEN PARSED?" << std::endl;
