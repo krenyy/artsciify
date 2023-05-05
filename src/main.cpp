@@ -9,7 +9,11 @@ int main(int, char **argv) {
   std::string relative_program_path = argv[0];
   std::string relative_program_parent_dir =
       relative_program_path.substr(0, relative_program_path.find_last_of('/'));
-  auto conf = Config::load(relative_program_parent_dir + "/artsciify.conf");
+  std::string config_path = relative_program_parent_dir + "/artsciify.conf";
+  auto config_opt = Config::load(config_path);
+  if (!config_opt.has_value()) {
+    throw std::logic_error("Couldn't find config file! (" + config_path + ")");
+  }
   auto x = PngImage::read("pepa.png");
   auto img = x.value();
   // Negative().apply(img);
