@@ -120,7 +120,7 @@ public:
         c.gradients.emplace(name,
                             AsciiTextTransform::Map::build(gradient, weights));
       } else {
-        throw std::logic_error("Syntax error! (at line "s +
+        throw std::logic_error("Unexpected symbol '" + buf + "'! (at line "s +
                                std::to_string(r.get_current_line()) + ")");
       }
     }
