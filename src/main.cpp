@@ -1,9 +1,6 @@
 #include "config.h"
-#include "filters.h"
-#include "image.h"
-#include "styles.h"
 #include <iostream>
-#include <memory>
+#include <string>
 
 int main(int, char **argv) {
   std::string relative_program_path = argv[0];
@@ -14,18 +11,22 @@ int main(int, char **argv) {
   if (!config_opt.has_value()) {
     throw std::logic_error("Couldn't find config file! (" + config_path + ")");
   }
-  auto x = PngImage::read("pepa.png");
-  auto img = x.value();
-  // Negative().apply(img);
-  // Grayscale(0.2126, 0.7152, 0.0722).apply(img);
-  // Brightness(5).apply(img);
-  // std::cerr << ArtStyle(
-  //                  std::make_shared<StringTextTransform>("🍆"),
-  //                  {
-  //                      std::make_shared<FromPixelBackgroundColorTransform>(),
-  //                  })
-  //                  .print(img);
-  // std::cerr << ArtStyle::ascii_eddie_smith().print(img);
-  // std::cerr << ArtStyle::ascii_eddie_smith_color().print(img);
+  Config config = std::move(*config_opt);
+  std::string img_path = "./stepech.png";
+  auto img_opt = PngImage::read(img_path);
+  if (!img_opt.has_value()) {
+    throw std::logic_error("Couldn't find config file! (" + config_path + ")");
+  }
+  Image img = std::move(*img_opt);
+  std::stringstream ss1, ss2;
+  ss1 << config.styles.at("ascii_eddie_smith_color").print(img);
+  ss2 << config.styles.at("block").print(img);
+  for (size_t i = 0; i < img.height(); ++i) {
+    std::string line;
+    std::getline(ss1, line);
+    std::cerr << line << " ";
+    std::getline(ss2, line);
+    std::cerr << line << std::endl;
+  }
   return 0;
 }
