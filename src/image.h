@@ -1,5 +1,4 @@
-#ifndef ARTSCIIFY_IMAGE_H
-#define ARTSCIIFY_IMAGE_H
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -45,5 +44,3 @@ class PngImage {
 public:
   static std::optional<Image> read(const char *filename);
 };
-
-#endif

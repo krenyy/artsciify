@@ -1,3 +1,5 @@
+#pragma once
+
 #include "styles.h"
 #include <fstream>
 #include <iostream>

@@ -1,5 +1,5 @@
 #include "filters.h"
-#include "image.h"
+#include "../image.h"
 
 Grayscale::Grayscale(double brightness_r, double brightness_g,
                      double brightness_b)

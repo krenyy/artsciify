@@ -1,5 +1,4 @@
-#ifndef ARTSCIIFY_STYLES_H
-#define ARTSCIIFY_STYLES_H
+#pragma once
 
 #include "image.h"
 #include <map>
@@ -83,5 +82,3 @@ private:
   std::shared_ptr<TextTransform> text_transform;
   std::vector<std::shared_ptr<ColorTransform>> color_transforms;
 };
-
-#endif
