@@ -4,6 +4,7 @@
 #include "image.h"
 #include <map>
 #include <memory>
+#include <optional>
 #include <sstream>
 
 std::string rgb_to_fg_color_code(const Color c);
@@ -29,7 +30,8 @@ class AsciiTextTransform : public TextTransform {
 public:
   class Map : public std::map<double, unsigned char> {
   public:
-    static Map build(std::string characters, std::vector<double> brightnesses);
+    static std::optional<Map> build(std::string characters,
+                                    std::vector<double> brightnesses);
   };
 
   AsciiTextTransform(const double brightness_r, const double brightness_g,

@@ -26,7 +26,7 @@ AsciiTextTransform::AsciiTextTransform(const double brightness_r,
                                        const double brightness_b,
                                        AsciiTextTransform::Map map)
     : br(brightness_r), bg(brightness_g), bb(brightness_b), m(map) {}
-AsciiTextTransform::Map
+std::optional<AsciiTextTransform::Map>
 AsciiTextTransform::Map::build(std::string characters,
                                std::vector<double> brightnesses = {}) {
   Map m;
@@ -36,7 +36,7 @@ AsciiTextTransform::Map::build(std::string characters,
     }
   }
   if (characters.size() != brightnesses.size()) {
-    throw 0;
+    return std::nullopt;
   }
   for (size_t i = 0; i < characters.size(); ++i) {
     m.emplace(brightnesses[i], characters[i]);

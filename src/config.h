@@ -117,8 +117,13 @@ public:
             weights.push_back(weight);
           }
         }
-        c.gradients.emplace(name,
-                            AsciiTextTransform::Map::build(gradient, weights));
+        auto map_opt = AsciiTextTransform::Map::build(gradient, weights);
+        if (!map_opt.has_value()) {
+          throw std::logic_error(
+              "Number of gradient characters and weights doesn't match! (at line "s +
+              std::to_string(cr.get_current_line()) + ")");
+        }
+        c.gradients.emplace(std::move(name), std::move(*map_opt));
       } else if (buf == "luminance") {
         std::string name;
         iss >> name;
