@@ -1,7 +1,9 @@
 NAME=artsciify
 
 CXX=g++
-CXXFLAGS=-c -std=c++17 -Wall -Wextra -Werror -Wpedantic -Weffc++
+CXXFLAGS=-c -std=c++17 -Wall -Wextra -Werror -Wpedantic -Weffc++ -Wshadow -Wconversion -Wsign-conversion \
+				 -Wfloat-equal -Wunused -Wuninitialized -Woverloaded-virtual -Wformat -Wmissing-declarations \
+				 -Wcast-qual -Wnull-dereference
 
 LD=g++
 LDFLAGS=-lpng
