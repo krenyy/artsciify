@@ -172,6 +172,123 @@ struct Config {
               std::to_string(cr.get_current_line()) + ")");
         }
         c.luminances.emplace(name, Luminance(r, g, b));
+      } else if (buf == "style") {
+        std::string name;
+        iss >> name;
+        if (name.size() == 0) {
+          throw std::logic_error("Missing style name! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        for (const char c : name) {
+          if (!std::isprint(c)) {
+            throw std::logic_error(
+                "A style name must contain only printable characters! (at line "s +
+                std::to_string(cr.get_current_line()) + ")");
+          }
+        }
+        if (c.styles.count(name)) {
+          throw std::logic_error("A style with the name '" + name +
+                                 "' already exists! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        buf.clear();
+        iss >> buf;
+        if (buf.size()) {
+          throw std::logic_error("Unexpected symbol '" + buf + "'! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        line_opt = cr.read_line();
+        if (!line_opt.has_value()) {
+          throw std::logic_error("Unexpected EOF! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        line = *line_opt;
+        iss = std::istringstream(std::move(line));
+        buf.clear();
+        iss >> buf;
+        std::optional<std::shared_ptr<TextTransform>> text_transform_opt;
+        if (buf == "AsciiTextTransform") {
+          buf.clear();
+          iss >> buf;
+          if (!c.luminances.count(buf)) {
+            throw std::logic_error("Unknown luminance: '" + buf +
+                                   "'! (at line "s +
+                                   std::to_string(cr.get_current_line()) + ")");
+          }
+          const auto &luminance = c.luminances.at(buf);
+          buf.clear();
+          iss >> buf;
+          if (!c.gradients.count(buf)) {
+            throw std::logic_error("Unknown gradient: '" + buf +
+                                   "'! (at line "s +
+                                   std::to_string(cr.get_current_line()) + ")");
+          }
+          const auto &gradient = c.gradients.at(buf);
+          text_transform_opt =
+              std::make_shared<AsciiTextTransform>(luminance, gradient);
+        } else if (buf == "StringTextTransform") {
+          if (iss.eof() ||
+              (buf = iss.str().substr((int)iss.tellg() + 1, iss.str().size()),
+               !buf.size())) {
+            throw std::logic_error(
+                "Argument expected for 'StringTextTransform'! (at line "s +
+                std::to_string(cr.get_current_line()) + ")");
+          }
+          if (buf[0] != '"' || buf[buf.size() - 1] != '"') {
+            throw std::logic_error(
+                "Argument for 'StringTextTransform' must be enclosed in "
+                "quotation marks (\"<arg>\")! (at line "s +
+                std::to_string(cr.get_current_line()) + ")");
+          }
+          buf = buf.substr(1, buf.size() - 2);
+          if (!buf.size()) {
+            throw std::logic_error(
+                "Argument for 'StringTextTransform' must not be empty! (at line "s +
+                std::to_string(cr.get_current_line()) + ")");
+          }
+          text_transform_opt = std::make_shared<StringTextTransform>(buf);
+        } else {
+          throw std::logic_error("Unknown text transform '" + buf +
+                                 "'! (at line "s +
+                                 std::to_string(cr.get_current_line()) + ")");
+        }
+        std::vector<std::shared_ptr<ColorTransform>> color_transforms;
+        for (;;) {
+          line_opt = cr.read_line();
+          if (!line_opt.has_value() ||
+              (line = std::move(*line_opt), line.size() == 0)) {
+            break;
+          }
+          iss = std::istringstream(line);
+          buf.clear();
+          iss >> buf;
+          if (buf == "FromPixelForegroundColorTransform") {
+            buf.clear();
+            iss >> buf;
+            if (buf.size()) {
+              throw std::logic_error(
+                  "Unexpected symbol '" + buf + "'! (at line "s +
+                  std::to_string(cr.get_current_line()) + ")");
+            }
+            color_transforms.push_back(
+                std::make_shared<FromPixelForegroundColorTransform>());
+          } else if (buf == "FromPixelBackgroundColorTransform") {
+            buf.clear();
+            iss >> buf;
+            if (buf.size()) {
+              throw std::logic_error(
+                  "Unexpected symbol '" + buf + "'! (at line "s +
+                  std::to_string(cr.get_current_line()) + ")");
+            }
+            color_transforms.push_back(
+                std::make_shared<FromPixelBackgroundColorTransform>());
+          } else {
+            throw std::logic_error("Unknown color transform '" + buf +
+                                   "'! (at line "s +
+                                   std::to_string(cr.get_current_line()) + ")");
+          }
+        }
+        c.styles.emplace(name, ArtStyle(*text_transform_opt, color_transforms));
       } else {
         throw std::logic_error("Unexpected symbol '" + buf + "'! (at line "s +
                                std::to_string(cr.get_current_line()) + ")");
@@ -182,4 +299,5 @@ struct Config {
 
   std::map<std::string, AsciiTextTransform::Map> gradients;
   std::map<std::string, Luminance> luminances;
+  std::map<std::string, ArtStyle> styles;
 };
