@@ -2,7 +2,6 @@
 
 #include "styles.h"
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <optional>
 
@@ -45,8 +44,7 @@ private:
   size_t current_line;
 };
 
-class Config {
-public:
+struct Config {
   static std::optional<Config> load(const std::string &path) {
     using namespace std::string_literals;
     auto ro = ConfigReader::create(path);
@@ -54,8 +52,8 @@ public:
       return std::nullopt;
     }
     ConfigReader cr = std::move(*ro);
-    Config c;
-    while (true) {
+    Config c{};
+    for (;;) {
       auto line_opt = cr.read_line();
       if (!line_opt.has_value()) {
         break;
@@ -173,32 +171,15 @@ public:
               "Missing luminance value for blue! (at line "s +
               std::to_string(cr.get_current_line()) + ")");
         }
-        c.luminances.emplace(name, std::make_tuple(r, g, b));
+        c.luminances.emplace(name, Luminance(r, g, b));
       } else {
         throw std::logic_error("Unexpected symbol '" + buf + "'! (at line "s +
                                std::to_string(cr.get_current_line()) + ")");
       }
     }
-    std::cerr << "*** WHAT HAS BEEN PARSED?" << std::endl;
-    std::cerr << "gradients:" << std::endl;
-    for (const auto &[x, y] : c.gradients) {
-      std::cerr << "  " << '"' << x << '"' << ": " << std::endl;
-      for (const auto &[z, w] : y) {
-        std::cerr << "    " << z << ": "
-                  << "'" << w << "'" << std::endl;
-      }
-    }
-    std::cerr << "luminances:" << std::endl;
-    for (const auto &[x, y] : c.luminances) {
-      std::cerr << "  " << '"' << x << '"' << ": (" << std::get<0>(y) << ", "
-                << std::get<1>(y) << ", " << std::get<2>(y) << ")" << std::endl;
-    }
-    std::cerr << "styles:" << std::endl;
-    std::cerr << "***" << std::endl;
     return c;
   }
 
-private:
   std::map<std::string, AsciiTextTransform::Map> gradients;
-  std::map<std::string, std::tuple<double, double, double>> luminances;
+  std::map<std::string, Luminance> luminances;
 };
