@@ -39,16 +39,11 @@ run: compile
 $(TARGET): $(OBJS) | create_build_dir
 	$(LD) -o $(TARGET) $(LDFLAGS) $^
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h
-	$(CXX) $(CXXFLAGS) -o $@ $<
-
-$(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 include $(DEPS)
 
-$(BUILD_DIR)/%.d: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h | create_build_dir
+$(BUILD_DIR)/%.d: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) -MM -MQ $(patsubst $(BUILD_DIR)/%.d,$(BUILD_DIR)/%.o,$@) $< -MF $@
-
-$(BUILD_DIR)/main.d: $(SRC_DIR)/main.cpp | create_build_dir
-	$(CXX) -MM -MQ $(BUILD_DIR)/main.o $< -MF $@
