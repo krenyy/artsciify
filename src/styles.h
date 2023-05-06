@@ -25,6 +25,13 @@ private:
   std::string s;
 };
 
+struct Luminance {
+  double r;
+  double g;
+  double b;
+  Luminance(double r, double g, double b) : r(r), g(g), b(b) {}
+};
+
 class AsciiTextTransform : public TextTransform {
 public:
   class Map : public std::map<double, unsigned char> {
@@ -33,14 +40,11 @@ public:
                                     std::vector<double> brightnesses);
   };
 
-  AsciiTextTransform(const double brightness_r, const double brightness_g,
-                     const double brightness_b, Map map);
+  AsciiTextTransform(Luminance luminance, Map map);
   void transform(std::string &s, const Color pixel) const;
 
 private:
-  double br;
-  double bg;
-  double bb;
+  Luminance lum;
   Map m;
 };
 

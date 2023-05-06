@@ -21,11 +21,9 @@ std::string rgb_to_bg_color_code(const Color c) {
 StringTextTransform::StringTextTransform(std::string str) : s(str) {}
 void StringTextTransform::transform(std::string &str, Color) const { str += s; }
 
-AsciiTextTransform::AsciiTextTransform(const double brightness_r,
-                                       const double brightness_g,
-                                       const double brightness_b,
+AsciiTextTransform::AsciiTextTransform(Luminance luminance,
                                        AsciiTextTransform::Map map)
-    : br(brightness_r), bg(brightness_g), bb(brightness_b), m(map) {}
+    : lum(std::move(luminance)), m(std::move(map)) {}
 std::optional<AsciiTextTransform::Map>
 AsciiTextTransform::Map::build(std::string characters,
                                std::vector<double> brightnesses = {}) {
@@ -45,7 +43,7 @@ AsciiTextTransform::Map::build(std::string characters,
 }
 void AsciiTextTransform::transform(std::string &s, const Color pixel) const {
   double px_brightness =
-      (br * pixel.r() + bg * pixel.g() + bb * pixel.b()) / 255;
+      (lum.r * pixel.r() + lum.g * pixel.g() + lum.b * pixel.b()) / 255;
   auto [begin, end] = m.equal_range(px_brightness);
   // returns a character which has the closest
   // brightness value to the current pixel
