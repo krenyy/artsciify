@@ -3,7 +3,7 @@
 /* heavily inspired by:
  * https://web.archive.org/web/20230421230936/https://gist.github.com/niw/5963798
  */
-std::optional<Image> PngImage::read(const char *filename) {
+std::optional<Image> PngImage::read(const std::string &file_name) {
   png_structp png =
       png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png) {
@@ -21,7 +21,7 @@ std::optional<Image> PngImage::read(const char *filename) {
     return std::nullopt;
   }
 
-  FILE *fp = fopen(filename, "rb");
+  FILE *fp = fopen(file_name.c_str(), "rb");
   if (!fp) {
     png_destroy_read_struct(&png, &info, NULL);
     return std::nullopt;

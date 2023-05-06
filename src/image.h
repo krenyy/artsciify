@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <optional>
 #include <png.h>
+#include <string>
 #include <vector>
 
 struct Color {
@@ -42,5 +43,5 @@ private:
 
 class PngImage {
 public:
-  static std::optional<Image> read(const char *filename);
+  static std::optional<Image> read(const std::string &filename);
 };
