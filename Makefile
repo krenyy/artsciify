@@ -29,7 +29,7 @@ clean:
 	rm -rf $(TARGET) $(BUILD_DIR)
 
 create_build_dir:
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 
 compile: $(TARGET)
 
