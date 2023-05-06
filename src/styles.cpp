@@ -26,7 +26,8 @@ AsciiTextTransform::Map::build(std::string characters,
   Map m;
   if (brightnesses.empty()) {
     for (size_t i = 0; i < characters.size(); ++i) {
-      brightnesses.push_back(static_cast<double>(i) / characters.size());
+      brightnesses.push_back(static_cast<double>(i) /
+                             static_cast<double>(characters.size()));
     }
   }
   if (characters.size() != brightnesses.size()) {
@@ -43,11 +44,12 @@ void AsciiTextTransform::transform(std::string &s, const Color pixel) const {
   auto [begin, end] = m.equal_range(px_brightness);
   // returns a character which has the closest
   // brightness value to the current pixel
-  s += (begin == m.end() || end == m.end())
-           ? (--m.end())->second
-           : (((begin->first - px_brightness < end->first - px_brightness)
-                   ? begin->second
-                   : end->second));
+  s += static_cast<char>(
+      (begin == m.end() || end == m.end())
+          ? (--m.end())->second
+          : (((begin->first - px_brightness < end->first - px_brightness)
+                  ? begin->second
+                  : end->second)));
 }
 
 void FromPixelForegroundColorTransform::transform(std::string &s,
@@ -59,22 +61,19 @@ void FromPixelBackgroundColorTransform::transform(std::string &s,
   s.insert(0, rgb_to_bg_color_code(pixel));
 }
 
-ForegroundColorTransform::ForegroundColorTransform(const Color pixel)
-    : pixel(pixel) {}
+ForegroundColorTransform::ForegroundColorTransform(Color c) : color(c) {}
 void ForegroundColorTransform::transform(std::string &s, Color) const {
-  s.insert(0, rgb_to_fg_color_code(pixel));
+  s.insert(0, rgb_to_fg_color_code(color));
 }
 
-BackgroundColorTransform::BackgroundColorTransform(const Color pixel)
-    : pixel(pixel) {}
+BackgroundColorTransform::BackgroundColorTransform(Color c) : color(c) {}
 void BackgroundColorTransform::transform(std::string &s, Color) const {
-  s.insert(0, rgb_to_bg_color_code(pixel));
+  s.insert(0, rgb_to_bg_color_code(color));
 }
 
-ArtStyle::ArtStyle(
-    std::shared_ptr<TextTransform> text_transform,
-    std::vector<std::shared_ptr<ColorTransform>> color_transforms)
-    : text_transform(text_transform), color_transforms(color_transforms) {}
+ArtStyle::ArtStyle(std::shared_ptr<TextTransform> transform,
+                   std::vector<std::shared_ptr<ColorTransform>> transforms)
+    : text_transform(transform), color_transforms(transforms) {}
 std::string ArtStyle::print(const Image &img) const {
   std::ostringstream oss;
   for (auto &row : img) {

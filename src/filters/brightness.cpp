@@ -6,7 +6,7 @@ void Brightness::apply(Image &img) const {
     for (auto &pixel : row) {
       for (auto &c : pixel) {
         double tmp = c * m;
-        c = tmp > 255 ? 255 : tmp;
+        c = tmp > 255 ? 255 : static_cast<uint8_t>(tmp);
       }
     }
   }

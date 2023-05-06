@@ -7,6 +7,7 @@
 #include <sstream>
 
 std::string rgb_to_fg_color_code(const Color c);
+std::string rgb_to_bg_color_code(const Color c);
 
 class PixelTransform {
 public:
@@ -29,7 +30,8 @@ struct Luminance {
   double r;
   double g;
   double b;
-  Luminance(double r, double g, double b) : r(r), g(g), b(b) {}
+  Luminance(double brightness_r, double brightness_g, double brightness_b)
+      : r(brightness_r), g(brightness_g), b(brightness_b) {}
 };
 
 class AsciiTextTransform : public TextTransform {
@@ -60,20 +62,20 @@ public:
 
 class ForegroundColorTransform : public ColorTransform {
 public:
-  ForegroundColorTransform(const Color pixel);
+  ForegroundColorTransform(const Color c);
   void transform(std::string &s, const Color pixel) const override;
 
 private:
-  Color pixel;
+  Color color;
 };
 
 class BackgroundColorTransform : public ColorTransform {
 public:
-  BackgroundColorTransform(const Color pixel);
+  BackgroundColorTransform(const Color c);
   void transform(std::string &s, const Color pixel) const override;
 
 private:
-  Color pixel;
+  Color color;
 };
 
 class ArtStyle {

@@ -52,7 +52,7 @@ struct Config {
       return std::nullopt;
     }
     ConfigReader cr = std::move(*ro);
-    Config c{};
+    Config conf{};
     for (;;) {
       auto line_opt = cr.read_line();
       if (!line_opt.has_value()) {
@@ -79,7 +79,7 @@ struct Config {
                 std::to_string(cr.get_current_line()) + ")");
           }
         }
-        if (c.gradients.count(name)) {
+        if (conf.gradients.count(name)) {
           throw std::logic_error("A gradient with the name '" + name +
                                  "' already exists! (at line "s +
                                  std::to_string(cr.get_current_line()) + ")");
@@ -123,7 +123,7 @@ struct Config {
               "Number of gradient characters and weights doesn't match! (at line "s +
               std::to_string(cr.get_current_line()) + ")");
         }
-        c.gradients.emplace(std::move(name), std::move(*map_opt));
+        conf.gradients.emplace(std::move(name), std::move(*map_opt));
       } else if (buf == "luminance") {
         std::string name;
         iss >> name;
@@ -138,7 +138,7 @@ struct Config {
                 std::to_string(cr.get_current_line()) + ")");
           }
         }
-        if (c.luminances.count(name)) {
+        if (conf.luminances.count(name)) {
           throw std::logic_error("A luminance with the name '" + name +
                                  "' already exists! (at line "s +
                                  std::to_string(cr.get_current_line()) + ")");
@@ -171,7 +171,7 @@ struct Config {
               "Missing luminance value for blue! (at line "s +
               std::to_string(cr.get_current_line()) + ")");
         }
-        c.luminances.emplace(name, Luminance(r, g, b));
+        conf.luminances.emplace(name, Luminance(r, g, b));
       } else if (buf == "style") {
         std::string name;
         iss >> name;
@@ -186,7 +186,7 @@ struct Config {
                 std::to_string(cr.get_current_line()) + ")");
           }
         }
-        if (c.styles.count(name)) {
+        if (conf.styles.count(name)) {
           throw std::logic_error("A style with the name '" + name +
                                  "' already exists! (at line "s +
                                  std::to_string(cr.get_current_line()) + ")");
@@ -210,25 +210,26 @@ struct Config {
         if (buf == "AsciiTextTransform") {
           buf.clear();
           iss >> buf;
-          if (!c.luminances.count(buf)) {
+          if (!conf.luminances.count(buf)) {
             throw std::logic_error("Unknown luminance: '" + buf +
                                    "'! (at line "s +
                                    std::to_string(cr.get_current_line()) + ")");
           }
-          const auto &luminance = c.luminances.at(buf);
+          const auto &luminance = conf.luminances.at(buf);
           buf.clear();
           iss >> buf;
-          if (!c.gradients.count(buf)) {
+          if (!conf.gradients.count(buf)) {
             throw std::logic_error("Unknown gradient: '" + buf +
                                    "'! (at line "s +
                                    std::to_string(cr.get_current_line()) + ")");
           }
-          const auto &gradient = c.gradients.at(buf);
+          const auto &gradient = conf.gradients.at(buf);
           text_transform_opt =
               std::make_shared<AsciiTextTransform>(luminance, gradient);
         } else if (buf == "StringTextTransform") {
           if (iss.eof() ||
-              (buf = iss.str().substr((int)iss.tellg() + 1, iss.str().size()),
+              (buf = iss.str().substr(static_cast<size_t>(iss.tellg()) + 1,
+                                      iss.str().size()),
                !buf.size())) {
             throw std::logic_error(
                 "Argument expected for 'StringTextTransform'! (at line "s +
@@ -288,13 +289,14 @@ struct Config {
                                    std::to_string(cr.get_current_line()) + ")");
           }
         }
-        c.styles.emplace(name, ArtStyle(*text_transform_opt, color_transforms));
+        conf.styles.emplace(name,
+                            ArtStyle(*text_transform_opt, color_transforms));
       } else {
         throw std::logic_error("Unexpected symbol '" + buf + "'! (at line "s +
                                std::to_string(cr.get_current_line()) + ")");
       }
     }
-    return c;
+    return conf;
   }
 
   std::map<std::string, AsciiTextTransform::Map> gradients;
