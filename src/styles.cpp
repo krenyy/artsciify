@@ -5,17 +5,13 @@
 #include <sstream>
 
 std::string rgb_to_fg_color_code(const Color c) {
-  std::ostringstream oss;
-  oss << "\033[38;2;" << (int)c.r() << ";" << (int)c.g() << ";" << (int)c.b()
-      << "m";
-  return oss.str();
+  return "\033[38;2;" + std::to_string((int)c.r()) + ";" +
+         std::to_string((int)c.g()) + ";" + std::to_string((int)c.b()) + "m";
 }
 
 std::string rgb_to_bg_color_code(const Color c) {
-  std::ostringstream oss;
-  oss << "\033[48;2;" << (int)c.r() << ";" << (int)c.g() << ";" << (int)c.b()
-      << "m";
-  return oss.str();
+  return "\033[48;2;" + std::to_string((int)c.r()) + ";" +
+         std::to_string((int)c.g()) + ";" + std::to_string((int)c.b()) + "m";
 }
 
 StringTextTransform::StringTextTransform(std::string str) : s(str) {}
