@@ -178,12 +178,20 @@ public:
       }
     }
     std::cerr << "*** WHAT HAS BEEN PARSED?" << std::endl;
+    std::cerr << "gradients:" << std::endl;
     for (const auto &[x, y] : c.gradients) {
       std::cerr << "  " << '"' << x << '"' << ": " << std::endl;
       for (const auto &[z, w] : y) {
-        std::cerr << "    " << z << ": " << w << std::endl;
+        std::cerr << "    " << z << ": "
+                  << "'" << w << "'" << std::endl;
       }
     }
+    std::cerr << "luminances:" << std::endl;
+    for (const auto &[x, y] : c.luminances) {
+      std::cerr << "  " << '"' << x << '"' << ": (" << std::get<0>(y) << ", "
+                << std::get<1>(y) << ", " << std::get<2>(y) << ")" << std::endl;
+    }
+    std::cerr << "styles:" << std::endl;
     std::cerr << "***" << std::endl;
     return c;
   }
