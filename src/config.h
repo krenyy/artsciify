@@ -13,15 +13,6 @@
 #include <string>
 #include <vector>
 
-template <typename T>
-std::ostream &operator<<(std::ostream &os, const std::vector<T> &v) {
-  os << "[\n";
-  for (const auto &x : v) {
-    os << "  " << x << ",\n";
-  }
-  return os << "]";
-}
-
 class ConfigReader {
 public:
   static std::optional<ConfigReader> create(const std::string &path) {
