@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../styles.h"
+#include "../luminance.h"
 #include "filter.h"
 
 class Grayscale : public Filter {

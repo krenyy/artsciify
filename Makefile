@@ -20,6 +20,7 @@ BUILD_DIR=build
 
 SRCS=$(wildcard $(SRC_DIR)/*.cpp)
 SRCS+=$(wildcard $(SRC_DIR)/filters/*.cpp)
+SRCS+=$(wildcard $(SRC_DIR)/transforms/*.cpp)
 OBJS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 DEPS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRCS))
 

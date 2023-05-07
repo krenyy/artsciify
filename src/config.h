@@ -1,9 +1,17 @@
 #pragma once
 
-#include "styles.h"
+#include "artstyle.h"
+#include "transforms/color_transform_bg_frompixel.h"
+#include "transforms/color_transform_fg_frompixel.h"
+#include "transforms/text_transform_ascii.h"
+#include "transforms/text_transform_string.h"
+#include "transforms/util.h"
 #include <fstream>
 #include <map>
 #include <optional>
+#include <sstream>
+#include <string>
+#include <vector>
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const std::vector<T> &v) {
