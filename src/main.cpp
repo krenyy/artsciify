@@ -9,13 +9,14 @@ int main(int, char **argv) {
   std::string config_path = relative_program_parent_dir + "/artsciify.conf";
   auto config_opt = Config::load(config_path);
   if (!config_opt.has_value()) {
-    throw std::logic_error("Couldn't find config file! (" + config_path + ")");
+    throw std::logic_error("Couldn't find config file at '" + config_path +
+                           "'!");
   }
   Config config = std::move(*config_opt);
   std::string img_path = "./stepech.png";
   auto img_opt = PngImage::read(img_path);
   if (!img_opt.has_value()) {
-    throw std::logic_error("Couldn't find image! (" + img_path + ")");
+    throw std::logic_error("Couldn't find image at '" + img_path + "'!");
   }
   Image img = std::move(*img_opt);
   std::stringstream ss1, ss2;
