@@ -48,8 +48,8 @@ public:
   }
   void next_line() {
     if (lines[row].size() > col) {
-      throw except("Garbage at the end of line: '" +
-                   lines[row].substr(col, lines[row].size()) + "'!");
+      throw except("Garbage at the end of line: \"" +
+                   lines[row].substr(col, lines[row].size()) + "\"!");
     }
     if (row == lines.size()) {
       throw except("Unexpected end of file!");
@@ -87,11 +87,11 @@ public:
       if (!first) {
         oss << ", ";
       }
-      oss << '\'' << x << "' "
+      oss << '"' << x << "\" "
           << "(0x" << (int)x << ')';
       first = false;
     }
-    oss << "}, got " << '\'' << c << "' "
+    oss << "}, got " << '"' << c << "\" "
         << "(0x" << (int)c << ')' << '!';
     col -= 1;
     throw except(oss.str());
@@ -121,16 +121,20 @@ public:
       return word;
     }
     std::ostringstream oss;
-    oss << "Expected one of {";
+    oss << std::hex << "Expected one of {";
     bool first = true;
-    for (const auto &x : s) {
+    for (const auto &w : s) {
       if (!first) {
         oss << ", ";
       }
-      oss << '\'' << x << '\'';
+      oss << '"' << w << '"';
       first = false;
     }
-    oss << "}, got " << '\'' << word << "'!";
+    oss << "}, got " << '"' << word << "\" (0x";
+    for (const char c : word) {
+      oss << (int)c;
+    }
+    oss << ")!";
     col -= word.size();
     throw except(oss.str());
   }
@@ -151,10 +155,10 @@ public:
       if (!first) {
         oss << ", ";
       }
-      oss << '\'' << x << '\'';
+      oss << '"' << x << '"';
       first = false;
     }
-    oss << "}, got " << '\'' << word << "'!";
+    oss << "}, got " << '"' << word << "\"!";
     col -= word.size();
     throw except(oss.str());
   }
