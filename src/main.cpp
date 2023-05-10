@@ -6,7 +6,7 @@
 
 int main(int argc, char **argv) {
   if (argc == 1) {
-    std::cerr << "No files provided!" << std::endl;
+    std::cerr << "No images provided!" << std::endl;
     return EXIT_FAILURE;
   }
   std::filesystem::path program_path =
