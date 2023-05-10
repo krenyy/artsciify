@@ -9,6 +9,10 @@ std::string ArtStyle::print(const Image &img) const {
   for (auto &row : img) {
     for (auto &pixel : row) {
       std::string s;
+      // apply twice to make it proportionally
+      // closer to the source image as fonts
+      // usually have height larger than width
+      text_transform->apply(s, pixel);
       text_transform->apply(s, pixel);
       for (const auto &t : color_transforms) {
         t->apply(s, pixel);
