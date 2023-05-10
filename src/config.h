@@ -6,6 +6,7 @@
 #include "transforms/text_transform_ascii.h"
 #include "transforms/text_transform_string.h"
 #include "transforms/util.h"
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <optional>
@@ -16,22 +17,27 @@
 
 class ConfigReader {
 public:
-  static std::optional<ConfigReader> create(const std::string &path) {
+  ConfigReader(const std::filesystem::path &p)
+      : path(p), lines(), row(0), col(0) {
+    if (!std::filesystem::exists(path)) {
+      throw except("file doesn't exist!");
+    }
+    if (!std::filesystem::is_regular_file(path)) {
+      throw except("not a regular file!");
+    }
     std::ifstream is(path);
     if (!is.good()) {
-      return std::nullopt;
+      throw except("failed to open file!");
     }
-    ConfigReader r;
     while (!is.eof()) {
       std::string line;
       std::getline(is, line);
       if (line.size() >= 2 && line.substr(0, 2) == "//") {
-        r.lines.emplace_back();
+        lines.emplace_back();
         continue;
       }
-      r.lines.push_back(line);
+      lines.push_back(line);
     }
-    return r;
   }
   std::optional<std::string> read_line() {
     if (row >= lines.size() || col != 0) {
@@ -172,28 +178,29 @@ public:
   size_t get_row() const { return row; }
   size_t get_current_line_length() const { return lines[row].size(); }
   bool eof() const { return row >= lines.size(); }
-  std::logic_error except(const std::string msg) const {
-    return std::logic_error(std::to_string(row + 1) + ':' +
-                            std::to_string(col + 1) + ": " + msg);
+  std::runtime_error except(const std::string msg) const {
+    std::ostringstream oss;
+    oss << "Error reading config file "
+        << std::filesystem::weakly_canonical(path) << ": "
+        << std::to_string(row + 1) << ':' << std::to_string(col + 1) << ": "
+        << msg;
+    return std::runtime_error(oss.str());
   }
 
 private:
-  ConfigReader() : lines(), row(0), col(0) {}
+  std::filesystem::path path;
   std::vector<std::string> lines;
   size_t row;
   size_t col;
 };
 
 struct Config {
-  static std::optional<Config> load(const std::string &path) {
-    auto ro = ConfigReader::create(path);
-    if (!ro.has_value()) {
-      return std::nullopt;
-    }
-    ConfigReader cr = std::move(*ro);
+  Config(const std::filesystem::path &path) : styles() {
+    ConfigReader cr(path);
     cr.skip_newlines();
-    Config conf{};
-    std::unordered_set<std::string> names;
+    std::map<std::string, std::unordered_set<std::string>> names;
+    std::map<std::string, AsciiTextTransform::Map> gradients;
+    std::map<std::string, Luminance> luminances;
     for (; !cr.eof();) {
       auto section_opt = cr.assert_word({"gradient", "luminance", "style"});
       if (!section_opt.has_value()) {
@@ -201,12 +208,12 @@ struct Config {
       }
       std::string section = std::move(*section_opt);
       cr.assert_char({' '});
-      auto name_opt = cr.assert_not_word(names);
+      auto name_opt = cr.assert_not_word(names[section]);
       if (!name_opt.has_value()) {
         throw cr.except("Expected " + section + " name!");
       }
       std::string name = std::move(*name_opt);
-      names.insert(name);
+      names[section].insert(name);
       cr.next_line();
       if (section == "gradient") {
         auto gradient_opt = cr.read_line();
@@ -235,7 +242,7 @@ struct Config {
           throw cr.except(
               "Number of gradient characters and weights doesn't match!");
         }
-        conf.gradients.emplace(std::move(name), std::move(*map_opt));
+        gradients.emplace(std::move(name), std::move(*map_opt));
       }
       if (section == "luminance") {
         auto r_opt = cr.read_double();
@@ -255,7 +262,7 @@ struct Config {
           throw cr.except("Missing luminance value for blue!");
         }
         double b = std::move(*b_opt);
-        conf.luminances.emplace(name, Luminance(r, g, b));
+        luminances.emplace(name, Luminance(r, g, b));
       }
       if (section == "style") {
         auto tt_name_opt =
@@ -267,25 +274,25 @@ struct Config {
         cr.assert_char({' '});
         std::optional<std::shared_ptr<TextTransform>> text_transform_opt;
         if (tt_name == "AsciiTextTransform") {
-          auto lum_name_opt = cr.assert_word(names);
+          auto lum_name_opt = cr.assert_word(names["luminance"]);
           if (!lum_name_opt.has_value()) {
             throw cr.except("Missing luminance name!");
           }
           std::string lum_name = std::move(*lum_name_opt);
-          if (!conf.luminances.count(lum_name)) {
+          if (!luminances.count(lum_name)) {
             throw cr.except("Unknown luminance: '" + lum_name + "'!");
           }
           cr.assert_char({' '});
-          auto gradient_name_opt = cr.assert_word(names);
+          auto gradient_name_opt = cr.assert_word(names["gradient"]);
           if (!gradient_name_opt.has_value()) {
             throw cr.except("Missing gradient name!");
           }
           std::string gradient_name = std::move(*gradient_name_opt);
-          if (!conf.gradients.count(gradient_name)) {
+          if (!gradients.count(gradient_name)) {
             throw cr.except("Unknown gradient: '" + gradient_name + "'!");
           }
-          const auto &luminance = conf.luminances.at(lum_name);
-          const auto &gradient = conf.gradients.at(gradient_name);
+          const auto &luminance = luminances.at(lum_name);
+          const auto &gradient = gradients.at(gradient_name);
           text_transform_opt =
               std::make_shared<AsciiTextTransform>(luminance, gradient);
         } else if (tt_name == "StringTextTransform") {
@@ -321,16 +328,12 @@ struct Config {
             throw cr.except(ct_name + " unimplemented!");
           }
         }
-        conf.styles.emplace(name,
-                            ArtStyle(*text_transform_opt, color_transforms));
+        styles.emplace(name, ArtStyle(*text_transform_opt, color_transforms));
       }
       cr.next_line();
       cr.skip_newlines();
     }
-    return conf;
   }
 
-  std::map<std::string, AsciiTextTransform::Map> gradients;
-  std::map<std::string, Luminance> luminances;
   std::map<std::string, ArtStyle> styles;
 };

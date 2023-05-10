@@ -1,30 +1,47 @@
 #include "image.h"
 
+PngImage::PngImage(const std::filesystem::path &p) : path(p) {}
+
+std::runtime_error PngImage::except(const std::string &s) const {
+  std::ostringstream oss;
+  oss << "Error reading png file " << std::filesystem::weakly_canonical(path)
+      << ": " << s;
+  return std::runtime_error(oss.str());
+}
+
 /* heavily inspired by:
  * https://web.archive.org/web/20230421230936/https://gist.github.com/niw/5963798
  */
-std::optional<Image> PngImage::read(const std::string &file_name) {
+Image PngImage::read() const {
+  if (!std::filesystem::exists(path)) {
+    throw except("file doesn't exist!");
+  }
+
+  if (!std::filesystem::is_regular_file(path)) {
+    throw except("not a regular file!");
+  }
+
   png_structp png =
       png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png) {
-    return std::nullopt;
+    throw except("libpng initialization error!");
   }
 
   png_infop info = png_create_info_struct(png);
   if (!info) {
     png_destroy_read_struct(&png, &info, NULL);
-    return std::nullopt;
+    throw except("libpng initialization error!");
   }
 
   if (setjmp(png_jmpbuf(png))) {
     png_destroy_read_struct(&png, &info, NULL);
-    return std::nullopt;
+    throw except("libpng runtime error!");
   }
 
-  FILE *fp = fopen(file_name.c_str(), "rb");
+  FILE *fp = fopen(path.c_str(), "rb");
   if (!fp) {
     png_destroy_read_struct(&png, &info, NULL);
-    return std::nullopt;
+    throw except("failed to open file!");
   }
 
   png_init_io(png, fp);

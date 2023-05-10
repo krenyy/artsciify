@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <optional>
 #include <png.h>
 #include <string>
@@ -52,5 +53,10 @@ private:
 
 class PngImage {
 public:
-  static std::optional<Image> read(const std::string &filename);
+  PngImage(const std::filesystem::path &path);
+  std::runtime_error except(const std::string &s) const;
+  Image read() const;
+
+private:
+  std::filesystem::path path;
 };

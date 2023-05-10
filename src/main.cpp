@@ -1,33 +1,42 @@
 #include "config.h"
+#include "filters/scale.h"
+#include <filesystem>
 #include <iostream>
 #include <string>
 
-int main(int, char **argv) {
-  std::string relative_program_path = argv[0];
-  std::string relative_program_parent_dir =
-      relative_program_path.substr(0, relative_program_path.find_last_of('/'));
-  std::string config_path = relative_program_parent_dir + "/artsciify.conf";
-  auto config_opt = Config::load(config_path);
-  if (!config_opt.has_value()) {
-    throw std::logic_error("Couldn't find config file at '" + config_path +
-                           "'!");
+int main(int argc, char **argv) {
+  if (argc == 1) {
+    std::cerr << "No files provided!" << std::endl;
+    return EXIT_FAILURE;
   }
-  Config config = std::move(*config_opt);
-  std::string img_path = "./stepech.png";
-  auto img_opt = PngImage::read(img_path);
-  if (!img_opt.has_value()) {
-    throw std::logic_error("Couldn't find image at '" + img_path + "'!");
+  std::filesystem::path program_path =
+      std::filesystem::weakly_canonical(argv[0]);
+  std::filesystem::path config_path =
+      program_path.parent_path() / "artsciify.conf";
+  std::vector<std::filesystem::path> images;
+  for (int i = 1; i < argc; ++i) {
+    images.emplace_back(argv[i]);
   }
-  Image img = std::move(*img_opt);
-  std::stringstream ss1, ss2;
-  ss1 << config.styles.at("ascii_eddie_smith_color").print(img);
-  ss2 << config.styles.at("block").print(img);
-  for (size_t i = 0; i < img.height(); ++i) {
-    std::string line;
-    std::getline(ss1, line);
-    std::cerr << line << " ";
-    std::getline(ss2, line);
-    std::cerr << line << std::endl;
+  try {
+    Config config(config_path);
+    for (const auto &p : images) {
+      std::filesystem::path img_path(p);
+      Image img = PngImage(img_path).read();
+      std::cerr << img.width() << "x" << img.height() << std::endl;
+      std::stringstream ss1, ss2;
+      ss1 << config.styles.at("ascii_eddie_smith").print(img);
+      ss2 << config.styles.at("block").print(img);
+      for (size_t i = 0; i < img.height(); ++i) {
+        std::string line;
+        std::getline(ss1, line);
+        std::cerr << line << " ";
+        std::getline(ss2, line);
+        std::cerr << line << std::endl;
+      }
+    }
+    return EXIT_SUCCESS;
+  } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    return EXIT_FAILURE;
   }
-  return 0;
 }
