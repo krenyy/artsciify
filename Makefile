@@ -17,6 +17,7 @@ TARGET=$(NAME)
 
 SRC_DIR=src
 BUILD_DIR=build
+DOC_DIR=doc
 
 SRCS=$(wildcard $(SRC_DIR)/*.cpp)
 SRCS+=$(wildcard $(SRC_DIR)/filters/*.cpp)
@@ -30,12 +31,15 @@ DEPS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRCS))
 all: compile
 
 clean:
-	rm -rf $(TARGET) $(BUILD_DIR)
+	rm -rf $(TARGET) $(BUILD_DIR) $(DOC_DIR)
 
 create_build_dir:
 	@mkdir -p $(BUILD_DIR)
 
 compile: $(TARGET)
+
+doc:
+	doxygen
 
 run: compile
 	./$(TARGET)
