@@ -6,15 +6,15 @@ ArtStyle::ArtStyle(std::shared_ptr<TextTransform> transform,
     : text_transform(transform), color_transforms(transforms) {}
 std::string ArtStyle::print(const Image &img) const {
   std::ostringstream oss;
-  for (auto &row : img) {
-    for (auto &pixel : row) {
+  for (const Image::Row &row : img) {
+    for (const Color &pixel : row) {
       std::string s;
       // apply twice to make it proportionally
       // closer to the source image as fonts
       // usually have height larger than width
       text_transform->apply(s, pixel);
       text_transform->apply(s, pixel);
-      for (const auto &t : color_transforms) {
+      for (const std::shared_ptr<ColorTransform> &t : color_transforms) {
         t->apply(s, pixel);
       }
       oss << s;
