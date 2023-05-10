@@ -2,23 +2,23 @@
 #include "filters/scale.h"
 #include <filesystem>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 int main(int argc, char **argv) {
-  if (argc == 1) {
-    std::cerr << "No images provided!" << std::endl;
-    return EXIT_FAILURE;
-  }
-  std::filesystem::path program_path =
-      std::filesystem::weakly_canonical(argv[0]);
-  std::filesystem::path config_path =
-      program_path.parent_path() / "artsciify.conf";
-  std::vector<std::filesystem::path> images;
-  for (int i = 1; i < argc; ++i) {
-    images.emplace_back(argv[i]);
-  }
   try {
+    std::filesystem::path program_path =
+        std::filesystem::weakly_canonical(argv[0]);
+    std::filesystem::path config_path =
+        program_path.parent_path() / "artsciify.conf";
     Config config(config_path);
+    if (argc == 1) {
+      throw std::runtime_error("No images provided!");
+    }
+    std::vector<std::filesystem::path> images;
+    for (int i = 1; i < argc; ++i) {
+      images.emplace_back(argv[i]);
+    }
     for (const auto &p : images) {
       std::filesystem::path img_path(p);
       Image img = PngImage(img_path).read();
