@@ -17,8 +17,7 @@
 
 class ConfigReader {
 public:
-  ConfigReader(const std::filesystem::path &p)
-      : path(p), lines(), row(0), col(0) {
+  ConfigReader(std::filesystem::path p) : path(p), lines(), row(0), col(0) {
     if (!std::filesystem::exists(path)) {
       throw except("file doesn't exist!");
     }
@@ -199,7 +198,7 @@ private:
 };
 
 struct Config {
-  Config(const std::filesystem::path &path) : styles() {
+  Config(std::filesystem::path path) : styles() {
     ConfigReader cr(path);
     cr.skip_newlines();
     std::map<std::string, std::unordered_set<std::string>> names;
