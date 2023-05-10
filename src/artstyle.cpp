@@ -9,9 +9,9 @@ std::string ArtStyle::print(const Image &img) const {
   for (auto &row : img) {
     for (auto &pixel : row) {
       std::string s;
-      text_transform->transform(s, pixel);
+      text_transform->apply(s, pixel);
       for (const auto &t : color_transforms) {
-        t->transform(s, pixel);
+        t->apply(s, pixel);
       }
       oss << s;
     }

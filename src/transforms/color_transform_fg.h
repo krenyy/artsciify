@@ -5,7 +5,7 @@
 class ForegroundColorTransform : public ColorTransform {
 public:
   ForegroundColorTransform(const Color c);
-  void transform(std::string &s, const Color pixel) const override;
+  void apply(std::string &s, const Color pixel) const override;
 
 private:
   Color color;

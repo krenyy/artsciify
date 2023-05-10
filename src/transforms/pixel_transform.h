@@ -6,5 +6,5 @@
 class PixelTransform {
 public:
   virtual ~PixelTransform() = default;
-  virtual void transform(std::string &s, const Color pixel) const = 0;
+  virtual void apply(std::string &s, const Color pixel) const = 0;
 };

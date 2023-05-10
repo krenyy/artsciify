@@ -13,7 +13,7 @@ public:
   };
 
   AsciiTextTransform(Luminance luminance, Map map);
-  void transform(std::string &s, const Color pixel) const;
+  void apply(std::string &s, const Color pixel) const override;
 
 private:
   Luminance lum;

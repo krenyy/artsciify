@@ -3,6 +3,6 @@
 
 BackgroundColorTransform::BackgroundColorTransform(Color c) : color(c) {}
 
-void BackgroundColorTransform::transform(std::string &s, Color) const {
+void BackgroundColorTransform::apply(std::string &s, Color) const {
   s.insert(0, rgb_to_bg_color_code(color));
 }

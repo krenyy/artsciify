@@ -4,5 +4,5 @@
 
 class FromPixelForegroundColorTransform : public ColorTransform {
 public:
-  void transform(std::string &s, const Color pixel) const override;
+  void apply(std::string &s, const Color pixel) const override;
 };

@@ -23,7 +23,7 @@ AsciiTextTransform::AsciiTextTransform(Luminance luminance,
                                        AsciiTextTransform::Map map)
     : lum(std::move(luminance)), m(std::move(map)) {}
 
-void AsciiTextTransform::transform(std::string &s, const Color pixel) const {
+void AsciiTextTransform::apply(std::string &s, const Color pixel) const {
   double px_brightness =
       (lum.r * pixel.r() + lum.g * pixel.g() + lum.b * pixel.b()) / 255;
   auto [begin, end] = m.equal_range(px_brightness);

@@ -2,6 +2,6 @@
 
 StringTextTransform::StringTextTransform(std::string str) : s(str) {}
 
-void StringTextTransform::transform(std::string &str, const Color) const {
+void StringTextTransform::apply(std::string &str, const Color) const {
   str += s;
 }
