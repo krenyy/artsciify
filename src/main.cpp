@@ -7,13 +7,13 @@
 
 int main(int argc, char **argv) {
   try {
-    std::filesystem::path program_path =
-        std::filesystem::weakly_canonical(argv[0]);
+    std::filesystem::path program_path(argv[0]);
     std::filesystem::path config_path =
         program_path.parent_path() / "artsciify.conf";
     Config config(config_path);
     if (argc == 1) {
-      throw std::runtime_error("No images provided!");
+      throw std::runtime_error("usage: " + program_path.string() +
+                               " <image> [<image> ...]");
     }
     std::vector<std::filesystem::path> images;
     for (int i = 1; i < argc; ++i) {
