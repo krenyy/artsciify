@@ -30,6 +30,15 @@ public:
   Image(size_t height, size_t width) : image(height, Row(width)) {}
   size_t height() const { return image.size(); }
   size_t width() const { return image.empty() ? 0 : image[0].size(); }
+  void set_height(size_t height) { image.resize(height); }
+  void set_width(size_t width) {
+    if (image.empty()) {
+      return;
+    }
+    for (Row &row : image) {
+      row.resize(width);
+    }
+  }
   Row &operator[](const size_t i) { return image[i]; }
   Row operator[](const size_t i) const { return image[i]; }
   std::vector<Row>::const_iterator begin() const { return image.begin(); }
