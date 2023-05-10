@@ -13,8 +13,17 @@ int main(int argc, char **argv) {
                                " <image> [<image> ...]");
     }
     std::vector<std::filesystem::path> image_paths;
-    for (int i = 1; i < argc; ++i) {
-      image_paths.emplace_back(argv[i]);
+    {
+      std::unordered_set<std::filesystem::path> image_paths_set;
+      for (int i = 1; i < argc; ++i) {
+        std::filesystem::path p(argv[i]);
+        if (image_paths_set.count(p) != 0) {
+          throw std::runtime_error('"' + p.string() +
+                                   "\" already provided once!");
+        }
+        image_paths_set.insert(p);
+        image_paths.push_back(std::move(p));
+      }
     }
     Presentation p(std::move(config), std::move(image_paths));
     p.start();
