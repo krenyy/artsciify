@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config_reader.h"
 #include <array>
 #include <cstdint>
 
@@ -18,6 +19,8 @@ struct Color {
   std::array<uint8_t, 3>::const_iterator end() const;
   std::array<uint8_t, 3>::iterator begin();
   std::array<uint8_t, 3>::iterator end();
+
+  static Color read(ConfigReader &cr);
 
   std::array<uint8_t, 3> rgb;
 };
