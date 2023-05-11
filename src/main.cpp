@@ -8,6 +8,9 @@ int main(int argc, char **argv) {
     std::filesystem::path config_path =
         program_path.parent_path() / "artsciify.conf";
     Config config(std::move(config_path));
+    if (config.styles.empty()) {
+      throw std::runtime_error("No styles found in config file!");
+    }
     if (argc == 1) {
       throw std::runtime_error("usage: " + program_path.string() +
                                " <image> [<image> ...]");
