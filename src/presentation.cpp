@@ -55,8 +55,7 @@ void Presentation::handle_input() {
     std::cout << std::endl;
     if (buf == "p") {
       std::cout << config.styles.at(current_style[current_image])
-                       .print(previews[current_image])
-                << std::endl;
+                       .print(previews[current_image]);
       return;
     }
     if (buf == "prev") {
@@ -78,7 +77,7 @@ void Presentation::handle_input() {
     if (buf == "s") {
       std::cout << "select a new style:\n";
       for (const auto &[name, _] : config.styles) {
-        std::cout << name << '\n';
+        std::cout << "  " << name << '\n';
       }
       buf.clear();
       std::cout << ": ";
