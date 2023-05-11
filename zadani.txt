@@ -1,0 +1,32 @@
+# Nástroj: ASCII-art
+
+Tento program bude jako parametr akceptovat jednu nebo více cest k obrázkům.
+Poté program spustí prezentaci jednotlivých snímků. Pro každý snímek bude
+možné tisknutí, nastavení vykreslovacího stylu, a aplikování filtrů.
+V případě neexistujících, nečitelných, či duplicitních cest se program ukončí.
+
+### Bude umět:
+
+- Načítat PNG obrázky (libpng)
+- Načítat konfigurační soubor, včetně indikace chyby (přesný řádek a přibližný sloupec)
+- Z konfiguračního souboru bude načítat ASCII přechody, světlosti, barvy, styly
+  a filtrové pipeliny (více filtrů v jednom balíčku)
+- Filtry: změna jasu, zšedivění, negativ, změna velikosti obrázku, rozostření, zostření
+- Individuálně aplikované filtry/pipeliny na jednotlivé obrázky
+- Individuálně aplikované styly na jednotlivé obrázky
+- Prezentace jednotlivých snímků bude ovládána přes standardní vstup
+- Každý snímek zapsat buďto na standardní výstup, anebo do souboru
+
+Nepovinně jsem si také zvolil možnost různých kombinací textových a barevných (podle
+podpory terminálu) kombinací. Kupříkladu je možno zvolit jako textovou transformaci
+ASCII přechod a jako barevnou transformaci zvolit vybarvení pozadí podle barev pixelů
+z obrázku, nebo také zvolit fixně znak a aplikovat vybarvení znaku podle barvy pixelu.
+
+Navíc je zde také koncept filtrových pipeline. Uživatel si může navolit sekvence filtrů
+a přiřadit jim jméno, které bude později moci použít přímo v aplikaci. Je zde také
+možnost vložit pipeline do další pipeline (`FilterPipeline` bude dědit z `Filter`)
+
+### Polymorfismus
+
+- Filtry a pipeliny
+- Pixelové transformace
