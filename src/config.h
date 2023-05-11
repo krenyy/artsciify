@@ -132,9 +132,19 @@ public:
       oss << '"' << w << '"';
       first = false;
     }
-    oss << "}, got " << '"' << word << "\" (0x";
-    for (const char c : word) {
-      oss << (int)c;
+    oss << "}, got " << '"';
+    for (size_t i = 0; i < 10 && i < word.size(); ++i) {
+      oss << word[i];
+    }
+    if (word.size() > 10) {
+      oss << "...";
+    }
+    oss << "\" (0x";
+    for (size_t i = 0; i < 10 && i < word.size(); ++i) {
+      oss << (int)word[i];
+    }
+    if (word.size() > 10) {
+      oss << "...";
     }
     oss << ")!";
     col -= word.size();
