@@ -429,7 +429,9 @@ struct Config {
                 std::make_shared<BackgroundColorTransform>(colors[color_name]));
           }
         }
-        styles.emplace(name, ArtStyle(*text_transform_opt, color_transforms));
+        if (color_present || color_transforms.size() == 0) {
+          styles.emplace(name, ArtStyle(*text_transform_opt, color_transforms));
+        }
       }
       cr.next_line();
       cr.skip_newlines();
