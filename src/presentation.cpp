@@ -212,6 +212,9 @@ void Presentation::handle_input() {
       }
       std::cerr << std::endl;
       if (buf == "stdout") {
+        for (const auto &[_, pipeline] : pipelines.at(current_image)) {
+          pipeline->apply(images[current_image]);
+        }
         std::cout << config.styles.at(current_style[current_image])
                          .print(images[current_image])
                   << std::endl;
@@ -258,6 +261,9 @@ void Presentation::handle_input() {
           }
         }
 
+        for (const auto &[_, pipeline] : pipelines.at(current_image)) {
+          pipeline->apply(images[current_image]);
+        }
         std::ofstream ofs(dst);
         ofs << config.styles.at(current_style[current_image])
                    .print(images[current_image])
