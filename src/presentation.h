@@ -20,7 +20,9 @@ private:
   std::vector<std::filesystem::path> paths;
   std::vector<Image> images;
   std::vector<Image> previews;
-  std::vector<FilterPipeline> pipelines;
+  std::vector<
+      std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>>
+      pipelines;
   size_t current_image;
   std::vector<std::string> current_style;
 };

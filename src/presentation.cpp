@@ -8,7 +8,7 @@
 Presentation::Presentation(Config cfg,
                            std::vector<std::filesystem::path> image_paths)
     : config(cfg), paths(std::move(image_paths)), images(), previews(),
-      pipelines(), current_image(0),
+      pipelines(paths.size()), current_image(0),
       current_style(paths.size(), config.styles.begin()->first) {
   for (std::filesystem::path p : paths) {
     images.push_back(PngImage(p).read());
@@ -46,15 +46,19 @@ void Presentation::handle_input() {
     }
     std::cerr << "current style: " << current_style[current_image] << std::endl;
     std::cerr << std::endl;
-    std::cerr << "[p]rint image, [prev]/[next] image, select [s]tyle, add "
+    std::cerr << "[p]rint image, [prev]/[next] image, select [s]tyle, edit "
                  "[f]ilter pipeline, [w]rite image, [q]uit: ";
     for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
       buf += c;
     }
     std::cerr << std::endl;
     if (buf == "p") {
-      std::cerr << config.styles.at(current_style[current_image])
-                       .print(previews[current_image]);
+      Image tmp_preview = previews[current_image];
+      for (const auto &[_, pipeline] : pipelines[current_image]) {
+        pipeline->apply(tmp_preview);
+      }
+      std::cerr
+          << config.styles.at(current_style[current_image]).print(tmp_preview);
       return;
     }
     if (buf == "prev") {
@@ -90,6 +94,112 @@ void Presentation::handle_input() {
       }
       current_style[current_image] = buf;
       return;
+    }
+    if (buf == "f") {
+      std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
+          &img_pipeline = pipelines.at(current_image);
+
+      std::cerr << "filter pipelines:\n";
+      for (const auto &[name, _] : img_pipeline) {
+        std::cerr << "  " << name << '\n';
+      }
+      std::cerr << std::endl;
+
+      for (;;) {
+        buf.clear();
+        std::cerr << "[a]dd, [d]elete: ";
+        for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
+          buf += c;
+        }
+        if (buf == "a") {
+          buf.clear();
+          std::cerr << "select a filter pipeline:\n";
+          for (const auto &[name, _] : config.pipelines) {
+            std::cerr << "  " << name << '\n';
+          }
+          std::cerr << ": ";
+          for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
+            buf += c;
+          }
+          std::cerr << std::endl;
+          if (config.pipelines.count(buf) == 0) {
+            std::cerr << "unknown filter pipeline" << std::endl;
+            return;
+          }
+
+          std::string pipeline_name = buf;
+          std::shared_ptr<FilterPipeline> pipeline =
+              config.pipelines.at(pipeline_name);
+
+          if (img_pipeline.empty()) {
+            img_pipeline.emplace_back(pipeline_name, pipeline);
+            std::cerr << "added filter " << pipeline_name << '\n';
+            return;
+          }
+
+          for (;;) {
+            buf.clear();
+            std::cerr << "select a position to insert the pipeline at\n";
+            size_t i = 0;
+            for (const auto &[name, _] : img_pipeline) {
+              std::cerr << "  " << i << ". " << name << '\n';
+              ++i;
+            }
+            std::cerr << "  [" << i << ".] \n";
+            std::cerr << ": ";
+            for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
+              buf += c;
+            }
+            size_t selected;
+            try {
+              selected = std::stoul(buf);
+            } catch (const std::exception &) {
+              std::cerr << "\ninvalid index\n";
+              return;
+            }
+            if (selected > img_pipeline.size()) {
+              continue;
+            }
+            img_pipeline.insert(img_pipeline.begin() +
+                                    static_cast<ssize_t>(selected),
+                                make_pair(pipeline_name, pipeline));
+            std::cerr << "\nadded filter " << pipeline_name << '\n';
+            return;
+          }
+          return;
+        }
+        if (buf == "d") {
+          for (;;) {
+            buf.clear();
+            std::cerr << "select a pipeline to delete\n";
+            size_t i = 0;
+            for (const auto &[name, _] : img_pipeline) {
+              std::cerr << "  " << i << ". " << name << '\n';
+              ++i;
+            }
+            std::cerr << ": ";
+            for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
+              buf += c;
+            }
+            size_t selected;
+            try {
+              selected = std::stoul(buf);
+            } catch (const std::exception &) {
+              std::cerr << "\ninvalid index\n";
+              return;
+            }
+            if (selected >= img_pipeline.size()) {
+              continue;
+            }
+            std::string pipeline_name = img_pipeline.at(selected).first;
+            img_pipeline.erase(img_pipeline.begin() +
+                               static_cast<ssize_t>(selected));
+            std::cerr << "\ndeleted pipeline " << pipeline_name << '\n';
+            return;
+          }
+        }
+        return;
+      }
     }
     if (buf == "w") {
       buf.clear();
