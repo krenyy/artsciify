@@ -18,7 +18,6 @@ private:
   std::vector<std::filesystem::path> paths;
   std::vector<Image> images;
   std::vector<Image> previews;
-  std::vector<Image> thumbnails;
   std::vector<FilterPipeline> pipelines;
   size_t current_image;
   std::vector<std::string> current_style;

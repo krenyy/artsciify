@@ -7,7 +7,7 @@
 Presentation::Presentation(Config cfg,
                            std::vector<std::filesystem::path> image_paths)
     : config(cfg), paths(std::move(image_paths)), images(), previews(),
-      thumbnails(), pipelines(), current_image(0),
+      pipelines(), current_image(0),
       current_style(paths.size(), config.styles.begin()->first) {
   for (std::filesystem::path p : paths) {
     images.push_back(PngImage(p).read());
@@ -18,11 +18,6 @@ Presentation::Presentation(Config cfg,
       Scale().apply(preview_img);
     }
     previews.push_back(std::move(preview_img));
-    Image thumbnail_img = img;
-    while (thumbnail_img.height() > 20 || thumbnail_img.width() > 20) {
-      Scale().apply(thumbnail_img);
-    }
-    thumbnails.push_back(std::move(thumbnail_img));
   }
 }
 
