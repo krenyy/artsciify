@@ -1,6 +1,8 @@
 #include "presentation.h"
 #include "filters/scale.h"
 #include "png.h"
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 
 Presentation::Presentation(Config cfg,
@@ -24,6 +26,7 @@ void Presentation::start() {
   while (!images.empty()) {
     handle_input();
   }
+  std::cerr << "done!" << std::endl;
 }
 
 void Presentation::handle_input() {
@@ -43,15 +46,14 @@ void Presentation::handle_input() {
     std::cerr << "current style: " << current_style[current_image] << std::endl;
     std::cerr << std::endl;
     std::cerr << "[p]rint image, [prev]/[next] image, select [s]tyle, add "
-                 "[f]ilter pipeline, [q]uit: ";
+                 "[f]ilter pipeline, [w]rite image, [q]uit: ";
     for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
       buf += c;
     }
     std::cerr << std::endl;
     if (buf == "p") {
       std::cerr << config.styles.at(current_style[current_image])
-                       .print(previews[current_image])
-                << std::flush;
+                       .print(previews[current_image]);
       return;
     }
     if (buf == "prev") {
@@ -71,11 +73,11 @@ void Presentation::handle_input() {
       return;
     }
     if (buf == "s") {
+      buf.clear();
       std::cerr << "select a new style:\n";
       for (const auto &[name, _] : config.styles) {
         std::cerr << "  " << name << '\n';
       }
-      buf.clear();
       std::cerr << ": ";
       for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
         buf += c;
@@ -86,6 +88,77 @@ void Presentation::handle_input() {
         return;
       }
       current_style[current_image] = buf;
+      return;
+    }
+    if (buf == "w") {
+      buf.clear();
+      std::cerr << "select write destination:\n";
+      std::cerr << "  stdout\n";
+      std::cerr << "  file\n";
+      std::cerr << ": ";
+      for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
+        buf += c;
+      }
+      std::cerr << std::endl;
+      if (buf == "stdout") {
+        std::cout << config.styles.at(current_style[current_image])
+                         .print(images[current_image])
+                  << std::endl;
+        images.erase(images.begin() + static_cast<ssize_t>(current_image));
+        previews.erase(previews.begin() + static_cast<ssize_t>(current_image));
+        current_style.erase(current_style.begin() +
+                            static_cast<ssize_t>(current_image));
+        std::cerr << "written successfully!" << std::endl;
+        return;
+      }
+      if (buf == "file") {
+        buf.clear();
+        std::filesystem::path dst(paths.at(current_image));
+        dst.replace_extension(".txt");
+        std::cerr << "type in a file path (default is " << dst << "): ";
+        for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
+          buf += c;
+        }
+        if (buf != "") {
+          dst = buf;
+        }
+        if (std::filesystem::exists(dst) &&
+            !std::filesystem::is_regular_file(dst)) {
+          std::cerr << "path already exists and is not a regular file!"
+                    << std::endl;
+          return;
+        }
+        if (std::filesystem::exists(dst) &&
+            std::filesystem::is_regular_file(dst)) {
+          for (;;) {
+            buf.clear();
+            std::cerr
+                << "file already exists, do you want to overwrite it? [y/n]: ";
+            for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
+              buf += c;
+            }
+            if (buf == "y") {
+              break;
+            }
+            if (buf == "n") {
+              std::cerr << "\naborted!" << std::endl;
+              return;
+            }
+          }
+        }
+
+        std::ofstream ofs(dst);
+        ofs << config.styles.at(current_style[current_image])
+                   .print(images[current_image])
+            << std::endl;
+        images.erase(images.begin() + static_cast<ssize_t>(current_image));
+        previews.erase(previews.begin() + static_cast<ssize_t>(current_image));
+        current_style.erase(current_style.begin() +
+                            static_cast<ssize_t>(current_image));
+        std::cerr << '\n' << dst << " written successfully!" << std::endl;
+        return;
+      }
+      std::cerr << "wrong option!" << std::endl;
       return;
     }
     if (buf == "q") {

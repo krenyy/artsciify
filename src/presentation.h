@@ -5,6 +5,7 @@
 #include "filters/pipeline.h"
 #include "image.h"
 #include <filesystem>
+#include <queue>
 #include <vector>
 
 class Presentation {
@@ -15,6 +16,7 @@ public:
 
 private:
   Config config;
+
   std::vector<std::filesystem::path> paths;
   std::vector<Image> images;
   std::vector<Image> previews;
