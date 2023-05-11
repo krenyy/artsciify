@@ -52,7 +52,11 @@ $(TARGET): $(OBJS) | create_build_dir
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
+
+ifeq (,$(filter clean,$(MAKECMDGOALS)))
 include $(DEPS)
+endif
+
 
 $(BUILD_DIR)/%.d: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
