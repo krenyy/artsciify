@@ -218,11 +218,14 @@ void Presentation::handle_input() {
         std::cout << config.styles.at(current_style[current_image])
                          .print(images[current_image])
                   << std::endl;
-        images.erase(images.begin() + static_cast<ssize_t>(current_image));
-        previews.erase(previews.begin() + static_cast<ssize_t>(current_image));
-        current_style.erase(current_style.begin() +
-                            static_cast<ssize_t>(current_image));
+        ssize_t cur_img = static_cast<ssize_t>(current_image);
+        paths.erase(paths.begin() + cur_img);
+        images.erase(images.begin() + cur_img);
+        previews.erase(previews.begin() + cur_img);
+        pipelines.erase(pipelines.begin() + cur_img);
+        current_style.erase(current_style.begin() + cur_img);
         std::cerr << "written successfully!" << std::endl;
+        --current_image;
         return;
       }
       if (buf == "file") {
@@ -268,11 +271,14 @@ void Presentation::handle_input() {
         ofs << config.styles.at(current_style[current_image])
                    .print(images[current_image])
             << std::endl;
-        images.erase(images.begin() + static_cast<ssize_t>(current_image));
-        previews.erase(previews.begin() + static_cast<ssize_t>(current_image));
-        current_style.erase(current_style.begin() +
-                            static_cast<ssize_t>(current_image));
+        ssize_t cur_img = static_cast<ssize_t>(current_image);
+        paths.erase(paths.begin() + cur_img);
+        images.erase(images.begin() + cur_img);
+        previews.erase(previews.begin() + cur_img);
+        pipelines.erase(pipelines.begin() + cur_img);
+        current_style.erase(current_style.begin() + cur_img);
         std::cerr << '\n' << dst << " written successfully!" << std::endl;
+        --current_image;
         return;
       }
       std::cerr << "wrong option!" << std::endl;
