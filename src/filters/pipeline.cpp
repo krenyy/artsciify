@@ -2,6 +2,7 @@
 #include "brightness.h"
 #include "grayscale.h"
 #include "negative.h"
+#include "threshold.h"
 
 FilterPipeline::FilterPipeline(std::vector<std::shared_ptr<Filter>> f)
     : filters(std::move(f)) {}
@@ -20,7 +21,7 @@ FilterPipeline FilterPipeline::read(
   std::vector<std::shared_ptr<Filter>> filters;
   for (;;) {
     auto filter_name_opt = cr.assert_word(
-        {"FilterPipeline", "Grayscale", "Brightness", "Negative"});
+        {"FilterPipeline", "Grayscale", "Brightness", "Negative", "Threshold"});
     if (!filter_name_opt.has_value()) {
       break;
     }
@@ -43,6 +44,9 @@ FilterPipeline FilterPipeline::read(
     }
     if (filter_name == "Negative") {
       filters.push_back(std::make_shared<Negative>());
+    }
+    if (filter_name == "Threshold") {
+      filters.push_back(std::make_shared<Threshold>(Threshold::read(cr)));
     }
     cr.next_line();
   }
