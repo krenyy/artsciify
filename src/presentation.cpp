@@ -85,6 +85,7 @@ void Presentation::handle_input() {
         return;
       }
       current_style[current_image] = buf;
+      return;
     }
     if (buf == "q") {
       throw std::runtime_error("quitting!");
