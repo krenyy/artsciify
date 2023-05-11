@@ -169,11 +169,20 @@ public:
     if (!word_opt.has_value()) {
       return std::nullopt;
     }
+    std::string word = std::move(*word_opt);
+    size_t word_size = word.size();
+    size_t pos;
+    double d;
     try {
-      return std::stod(std::move(*word_opt));
+      d = std::stod(std::move(word), &pos);
     } catch (...) {
       return std::nullopt;
     }
+    if (pos != word_size) {
+      col -= word_size;
+      throw except("Invalid double!");
+    }
+    return d;
   }
   std::optional<uint8_t> read_uint8() {
     auto integer_opt = read_integer();
