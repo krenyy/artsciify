@@ -22,25 +22,25 @@ Image PngImage::read() const {
   }
 
   png_structp png =
-      png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+      png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
   if (!png) {
     throw except("libpng initialization error!");
   }
 
   png_infop info = png_create_info_struct(png);
   if (!info) {
-    png_destroy_read_struct(&png, &info, NULL);
+    png_destroy_read_struct(&png, &info, nullptr);
     throw except("libpng initialization error!");
   }
 
   if (setjmp(png_jmpbuf(png))) {
-    png_destroy_read_struct(&png, &info, NULL);
+    png_destroy_read_struct(&png, &info, nullptr);
     throw except("libpng runtime error!");
   }
 
   FILE *fp = fopen(path.c_str(), "rb");
   if (!fp) {
-    png_destroy_read_struct(&png, &info, NULL);
+    png_destroy_read_struct(&png, &info, nullptr);
     throw except("failed to open file!");
   }
 
@@ -98,7 +98,7 @@ Image PngImage::read() const {
 
   fclose(fp);
 
-  png_destroy_read_struct(&png, &info, NULL);
+  png_destroy_read_struct(&png, &info, nullptr);
 
   return image;
 }
