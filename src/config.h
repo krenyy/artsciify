@@ -1,7 +1,9 @@
 #pragma once
 
 #include "artstyle.h"
+#include "transforms/color_transform_bg.h"
 #include "transforms/color_transform_bg_frompixel.h"
+#include "transforms/color_transform_fg.h"
 #include "transforms/color_transform_fg_frompixel.h"
 #include "transforms/text_transform_ascii.h"
 #include "transforms/text_transform_string.h"
@@ -53,7 +55,7 @@ public:
     if (row == lines.size()) {
       throw except("Unexpected end of file!");
     }
-    const std::string &line = lines[row++];
+    const std::string &line = lines[row];
     col = 0;
     size_t i = 0;
     for (const char c : line) {
@@ -63,6 +65,7 @@ public:
       }
       ++i;
     }
+    ++row;
   }
   std::optional<char> read_char() {
     if (col >= lines[row].size()) {
@@ -172,6 +175,29 @@ public:
       return std::nullopt;
     }
   }
+  std::optional<uint8_t> read_uint8() {
+    auto integer_opt = read_integer();
+    if (!integer_opt.has_value()) {
+      return std::nullopt;
+    }
+    long integer = std::move(*integer_opt);
+    if (integer < 0 || 255 < integer) {
+      throw except("Value " + std::to_string(integer) +
+                   " too large for type `uint8_t`!");
+    }
+    return integer;
+  }
+  std::optional<long> read_integer() {
+    auto word_opt = read_word();
+    if (!word_opt.has_value()) {
+      return std::nullopt;
+    }
+    try {
+      return std::stol(std::move(*word_opt));
+    } catch (...) {
+      return std::nullopt;
+    }
+  }
   void skip_newlines() {
     for (; lines[row].size() == 0;) {
       ++row;
@@ -198,14 +224,28 @@ private:
 };
 
 struct Config {
-  Config(std::filesystem::path path) : styles() {
+  Config(std::filesystem::path path) : color_present(false), styles() {
     ConfigReader cr(path);
+    cr.skip_newlines();
+    if (!cr.assert_word({"ansi_color_present"}).has_value()) {
+      throw cr.except("Missing ansi_color_present!");
+    }
+    cr.assert_char({' '});
+    auto ansi_color_present_opt = cr.assert_word({"yes", "no"});
+    if (!ansi_color_present_opt.has_value()) {
+      throw cr.except("Missing ansi_color_present value!");
+    }
+    auto ansi_color_present = std::move(*ansi_color_present_opt);
+    color_present = ansi_color_present == "yes" ? true : false;
+    cr.next_line();
     cr.skip_newlines();
     std::map<std::string, std::unordered_set<std::string>> names;
     std::map<std::string, AsciiTextTransform::Map> gradients;
     std::map<std::string, Luminance> luminances;
+    std::map<std::string, Color> colors;
     for (; !cr.eof();) {
-      auto section_opt = cr.assert_word({"gradient", "luminance", "style"});
+      auto section_opt =
+          cr.assert_word({"gradient", "luminance", "color", "style"});
       if (!section_opt.has_value()) {
         throw cr.except("Missing section ID!");
       }
@@ -246,6 +286,26 @@ struct Config {
               "Number of gradient characters and weights doesn't match!");
         }
         gradients.emplace(std::move(name), std::move(*map_opt));
+      }
+      if (section == "color") {
+        auto r_opt = cr.read_uint8();
+        if (!r_opt.has_value()) {
+          throw cr.except("Missing color value for red!");
+        }
+        cr.assert_char({' '});
+        uint8_t r = std::move(*r_opt);
+        auto g_opt = cr.read_uint8();
+        if (!g_opt.has_value()) {
+          throw cr.except("Missing color value for green!");
+        }
+        cr.assert_char({' '});
+        uint8_t g = std::move(*g_opt);
+        auto b_opt = cr.read_uint8();
+        if (!b_opt.has_value()) {
+          throw cr.except("Missing color value for blue!");
+        }
+        uint8_t b = std::move(*b_opt);
+        colors.emplace(name, Color(r, g, b));
       }
       if (section == "luminance") {
         auto r_opt = cr.read_double();
@@ -324,11 +384,30 @@ struct Config {
                          "rTransform") {
             color_transforms.push_back(
                 std::make_shared<FromPixelForegroundColorTransform>());
-          } else if (ct_name == "FromPixelBackgroundColorTransform") {
+          }
+          if (ct_name == "FromPixelBackgroundColorTransform") {
             color_transforms.push_back(
                 std::make_shared<FromPixelBackgroundColorTransform>());
-          } else {
-            throw cr.except(ct_name + " unimplemented!");
+          }
+          if (ct_name == "ForegroundColorTransform") {
+            cr.assert_char({' '});
+            auto color_name_opt = cr.assert_word(names["color"]);
+            if (!color_name_opt.has_value()) {
+              throw cr.except("Missing color!");
+            }
+            std::string color_name = std::move(*color_name_opt);
+            color_transforms.push_back(
+                std::make_shared<ForegroundColorTransform>(colors[color_name]));
+          }
+          if (ct_name == "BackgroundColorTransform") {
+            cr.assert_char({' '});
+            auto color_name_opt = cr.assert_word(names["color"]);
+            if (!color_name_opt.has_value()) {
+              throw cr.except("Missing color!");
+            }
+            std::string color_name = std::move(*color_name_opt);
+            color_transforms.push_back(
+                std::make_shared<BackgroundColorTransform>(colors[color_name]));
           }
         }
         styles.emplace(name, ArtStyle(*text_transform_opt, color_transforms));
@@ -338,5 +417,6 @@ struct Config {
     }
   }
 
+  bool color_present;
   std::map<std::string, ArtStyle> styles;
 };

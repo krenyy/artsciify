@@ -3,6 +3,8 @@
 #include "../luminance.h"
 #include "text_transform.h"
 #include <map>
+#include <optional>
+#include <vector>
 
 class AsciiTextTransform : public TextTransform {
 public:

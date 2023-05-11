@@ -1,5 +1,5 @@
 #include "util.h"
-#include "../image.h"
+#include "../color.h"
 #include <string>
 
 std::string rgb_to_fg_color_code(const Color c) {

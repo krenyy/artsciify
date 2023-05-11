@@ -1,8 +1,10 @@
 #pragma once
 
+#include "image.h"
 #include "transforms/color_transform.h"
 #include "transforms/text_transform.h"
 #include <memory>
+#include <vector>
 
 class ArtStyle {
 public:

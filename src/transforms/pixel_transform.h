@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../image.h"
+#include "../color.h"
 #include <string>
 
 class PixelTransform {
