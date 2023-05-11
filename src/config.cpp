@@ -29,13 +29,7 @@ ConfigReader::ConfigReader(std::filesystem::path p)
     lines.push_back(line);
   }
 }
-std::optional<std::string> ConfigReader::read_line() {
-  if (row >= lines.size() || col != 0) {
-    return std::nullopt;
-  }
-  col = lines[row].size();
-  return lines[row];
-}
+
 void ConfigReader::next_line() {
   if (lines[row].size() > col) {
     throw except("Garbage at the end of line: \"" +
@@ -56,6 +50,19 @@ void ConfigReader::next_line() {
   }
   ++row;
 }
+void ConfigReader::skip_newlines() {
+  for (; lines[row].size() == 0;) {
+    ++row;
+  }
+}
+std::optional<std::string> ConfigReader::read_line() {
+  if (row >= lines.size() || col != 0) {
+    return std::nullopt;
+  }
+  col = lines[row].size();
+  return lines[row];
+}
+
 std::optional<char> ConfigReader::read_char() {
   if (col >= lines[row].size()) {
     return std::nullopt;
@@ -88,6 +95,7 @@ ConfigReader::assert_char(const std::unordered_set<char> &s) {
   col -= 1;
   throw except(oss.str());
 }
+
 std::optional<std::string> ConfigReader::read_word() {
   const std::string &line = lines[row];
   std::string cur_to_end = line.substr(col, line.size());
@@ -164,6 +172,30 @@ ConfigReader::assert_not_word(const std::unordered_set<std::string> &s) {
   col -= word.size();
   throw except(oss.str());
 }
+
+std::optional<long> ConfigReader::read_integer() {
+  auto word_opt = read_word();
+  if (!word_opt.has_value()) {
+    return std::nullopt;
+  }
+  try {
+    return std::stol(std::move(*word_opt));
+  } catch (...) {
+    return std::nullopt;
+  }
+}
+std::optional<uint8_t> ConfigReader::read_uint8() {
+  auto integer_opt = read_integer();
+  if (!integer_opt.has_value()) {
+    return std::nullopt;
+  }
+  long integer = std::move(*integer_opt);
+  if (integer < 0 || 255 < integer) {
+    throw except("Value " + std::to_string(integer) +
+                 " is out of range for type `uint8_t`!");
+  }
+  return integer;
+}
 std::optional<double> ConfigReader::read_double() {
   auto word_opt = read_word();
   if (!word_opt.has_value()) {
@@ -184,40 +216,15 @@ std::optional<double> ConfigReader::read_double() {
   }
   return d;
 }
-std::optional<uint8_t> ConfigReader::read_uint8() {
-  auto integer_opt = read_integer();
-  if (!integer_opt.has_value()) {
-    return std::nullopt;
-  }
-  long integer = std::move(*integer_opt);
-  if (integer < 0 || 255 < integer) {
-    throw except("Value " + std::to_string(integer) +
-                 " is out of range for type `uint8_t`!");
-  }
-  return integer;
-}
-std::optional<long> ConfigReader::read_integer() {
-  auto word_opt = read_word();
-  if (!word_opt.has_value()) {
-    return std::nullopt;
-  }
-  try {
-    return std::stol(std::move(*word_opt));
-  } catch (...) {
-    return std::nullopt;
-  }
-}
-void ConfigReader::skip_newlines() {
-  for (; lines[row].size() == 0;) {
-    ++row;
-  }
-}
+
+bool ConfigReader::eof() const { return row >= lines.size(); }
+
 size_t ConfigReader::get_col() const { return col; }
 size_t ConfigReader::get_row() const { return row; }
 size_t ConfigReader::get_current_line_length() const {
   return lines[row].size();
 }
-bool ConfigReader::eof() const { return row >= lines.size(); }
+
 std::runtime_error ConfigReader::except(const std::string msg) const {
   std::ostringstream oss;
   oss << "Error reading config file " << std::filesystem::weakly_canonical(path)
