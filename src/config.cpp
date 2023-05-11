@@ -226,7 +226,7 @@ std::runtime_error ConfigReader::except(const std::string msg) const {
   return std::runtime_error(oss.str());
 }
 
-Config::Config(std::filesystem::path path) : color_present(false), styles() {
+Config::Config(std::filesystem::path path) : styles() {
   ConfigReader cr(path);
   cr.skip_newlines();
   if (!cr.assert_word({"ansi_color_present"}).has_value()) {
@@ -238,7 +238,7 @@ Config::Config(std::filesystem::path path) : color_present(false), styles() {
     throw cr.except("Missing ansi_color_present value!");
   }
   auto ansi_color_present = std::move(*ansi_color_present_opt);
-  color_present = ansi_color_present == "yes" ? true : false;
+  bool color_present = ansi_color_present == "yes" ? true : false;
   cr.next_line();
   cr.skip_newlines();
   std::map<std::string, std::unordered_set<std::string>> names;

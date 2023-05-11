@@ -41,6 +41,5 @@ private:
 struct Config {
   Config(std::filesystem::path path);
 
-  bool color_present;
   std::map<std::string, ArtStyle> styles;
 };
