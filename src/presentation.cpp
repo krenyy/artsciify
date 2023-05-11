@@ -31,7 +31,8 @@ void Presentation::handle_input() {
   for (;;) {
     buf.clear();
     std::cerr << std::endl;
-    std::cerr << "current image: " << paths[current_image] << std::endl;
+    std::cerr << "current image: " << paths[current_image] << " ("
+              << current_image + 1 << '/' << images.size() << ")" << std::endl;
     std::cerr << "image dimensions: " << images[current_image].width() << 'x'
               << images[current_image].height() << std::endl;
     if (images[current_image].width() != previews[current_image].width() ||
