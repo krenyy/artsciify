@@ -5,12 +5,6 @@
 int main(int argc, char **argv) {
   try {
     std::filesystem::path program_path(argv[0]);
-    std::filesystem::path config_path =
-        program_path.parent_path() / "artsciify.conf";
-    Config config(std::move(config_path));
-    if (config.styles.empty()) {
-      throw std::runtime_error("No styles found in config file!");
-    }
     if (argc == 1) {
       throw std::runtime_error("usage: " + program_path.string() +
                                " <image> [<image> ...]");
@@ -27,6 +21,12 @@ int main(int argc, char **argv) {
         image_paths_set.insert(p);
         image_paths.push_back(std::move(p));
       }
+    }
+    std::filesystem::path config_path =
+        program_path.parent_path() / "artsciify.conf";
+    Config config(std::move(config_path));
+    if (config.styles.empty()) {
+      throw std::runtime_error("No styles found in config file!");
     }
     Presentation p(std::move(config), std::move(image_paths));
     p.start();
