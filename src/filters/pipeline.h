@@ -2,6 +2,7 @@
 
 #include "filter.h"
 #include <memory>
+#include <string>
 #include <vector>
 
 class FilterPipeline : Filter {

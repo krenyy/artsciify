@@ -1,7 +1,6 @@
 #include "presentation.h"
 #include "filters/scale.h"
-#include "image.h"
-#include "transforms/color_transform_bg_frompixel.h"
+#include "png.h"
 #include <iostream>
 
 Presentation::Presentation(Config cfg,
