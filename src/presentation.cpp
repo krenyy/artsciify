@@ -15,7 +15,8 @@ Presentation::Presentation(Config cfg,
   }
   for (const Image &img : images) {
     Image preview_img = img;
-    while (preview_img.height() > 64 || preview_img.width() > 64) {
+    while (preview_img.height() > config.preview_side_limit ||
+           preview_img.width() > config.preview_side_limit) {
       Scale().apply(preview_img);
     }
     previews.push_back(std::move(preview_img));

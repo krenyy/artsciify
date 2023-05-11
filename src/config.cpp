@@ -233,9 +233,20 @@ std::runtime_error ConfigReader::except(const std::string msg) const {
   return std::runtime_error(oss.str());
 }
 
-Config::Config(std::filesystem::path path) : styles() {
+Config::Config(std::filesystem::path path) : preview_side_limit(), styles() {
   ConfigReader cr(path);
   cr.skip_newlines();
+  if (!cr.assert_word({"preview_side_limit"}).has_value()) {
+    throw cr.except("Missing preview_side_limit!");
+  }
+  cr.assert_char({' '});
+  auto preview_side_limit_opt = cr.read_integer();
+  if (!preview_side_limit_opt.has_value()) {
+    throw cr.except("Missing preview_side_limit value!");
+  }
+  long preview_side_limit_long = std::move(*preview_side_limit_opt);
+  preview_side_limit = static_cast<size_t>(std::move(preview_side_limit_long));
+  cr.next_line();
   if (!cr.assert_word({"ansi_color_present"}).has_value()) {
     throw cr.except("Missing ansi_color_present!");
   }
@@ -248,6 +259,7 @@ Config::Config(std::filesystem::path path) : styles() {
   bool color_present = ansi_color_present == "yes" ? true : false;
   cr.next_line();
   cr.skip_newlines();
+
   std::map<std::string, std::unordered_set<std::string>> names;
   std::map<std::string, AsciiTextTransform::Map> gradients;
   std::map<std::string, Luminance> luminances;
