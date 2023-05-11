@@ -38,7 +38,7 @@ Config::Config(std::filesystem::path path) : preview_side_limit(), styles() {
   std::map<std::string, AsciiTextTransform::Map> gradients;
   std::map<std::string, Luminance> luminances;
   std::map<std::string, Color> colors;
-  for (; !cr.eof();) {
+  while (!cr.eof()) {
     auto section_opt =
         cr.assert_word({"gradient", "luminance", "color", "style"});
     if (!section_opt.has_value()) {
