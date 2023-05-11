@@ -30,7 +30,7 @@ DEPS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRCS))
 .PHONY: all clean compile create_build_dir run
 .DEFAULT_GOAL=all
 
-all: compile
+all: compile doc
 
 clean:
 	rm -rf $(TARGET) $(BUILD_DIR) $(DOC_DIR)
