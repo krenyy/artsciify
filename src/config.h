@@ -192,7 +192,7 @@ public:
     long integer = std::move(*integer_opt);
     if (integer < 0 || 255 < integer) {
       throw except("Value " + std::to_string(integer) +
-                   " too large for type `uint8_t`!");
+                   " is out of range for type `uint8_t`!");
     }
     return integer;
   }
