@@ -1,6 +1,7 @@
 #include "pipeline.h"
 #include "brightness.h"
 #include "grayscale.h"
+#include "negative.h"
 
 FilterPipeline::FilterPipeline(std::vector<std::shared_ptr<Filter>> f)
     : filters(std::move(f)) {}
@@ -39,6 +40,9 @@ FilterPipeline FilterPipeline::read(
     }
     if (filter_name == "Brightness") {
       filters.push_back(std::make_shared<Brightness>(Brightness::read(cr)));
+    }
+    if (filter_name == "Negative") {
+      filters.push_back(std::make_shared<Negative>());
     }
     cr.next_line();
   }
