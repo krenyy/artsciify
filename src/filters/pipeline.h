@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-class FilterPipeline : Filter {
+class FilterPipeline : public Filter {
 public:
   void apply(Image &img) const override;
 
