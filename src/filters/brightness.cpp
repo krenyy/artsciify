@@ -11,3 +11,12 @@ void Brightness::apply(Image &img) const {
     }
   }
 }
+
+Brightness Brightness::read(ConfigReader &cr) {
+  cr.assert_char({' '});
+  auto val_opt = cr.read_double();
+  if (!val_opt.has_value()) {
+    throw cr.except("Missing brightness value!");
+  }
+  return {std::move(*val_opt)};
+}

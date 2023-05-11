@@ -1,6 +1,7 @@
 #pragma once
 
 #include "artstyle.h"
+#include "filters/pipeline.h"
 #include <filesystem>
 #include <map>
 
@@ -9,4 +10,5 @@ struct Config {
 
   size_t preview_side_limit;
   std::map<std::string, ArtStyle> styles;
+  std::map<std::string, std::shared_ptr<FilterPipeline>> pipelines;
 };

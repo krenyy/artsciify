@@ -1,4 +1,5 @@
 #include "config.h"
+#include "filters/pipeline.h"
 #include "transforms/color_transforms/background.h"
 #include "transforms/color_transforms/background_from_pixel.h"
 #include "transforms/color_transforms/foreground.h"
@@ -7,7 +8,8 @@
 #include "transforms/text_transforms/string.h"
 #include <fstream>
 
-Config::Config(std::filesystem::path path) : preview_side_limit(), styles() {
+Config::Config(std::filesystem::path path)
+    : preview_side_limit(), styles(), pipelines() {
   ConfigReader cr(path);
   cr.skip_newlines();
   if (!cr.assert_word({"preview_side_limit"}).has_value()) {
@@ -40,7 +42,7 @@ Config::Config(std::filesystem::path path) : preview_side_limit(), styles() {
   std::map<std::string, Color> colors;
   while (!cr.eof()) {
     auto section_opt =
-        cr.assert_word({"gradient", "luminance", "color", "style"});
+        cr.assert_word({"gradient", "luminance", "color", "style", "pipeline"});
     if (!section_opt.has_value()) {
       throw cr.except("Missing section ID!");
     }
@@ -65,6 +67,11 @@ Config::Config(std::filesystem::path path) : preview_side_limit(), styles() {
     if (section == "style") {
       ArtStyle::read(cr, std::move(name), color_present, names, gradients,
                      luminances, colors, styles);
+    }
+    if (section == "pipeline") {
+      pipelines.emplace(std::move(name),
+                        std::make_shared<FilterPipeline>(FilterPipeline::read(
+                            cr, names, luminances, pipelines)));
     }
     cr.next_line();
     cr.skip_newlines();

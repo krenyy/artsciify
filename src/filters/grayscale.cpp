@@ -9,3 +9,15 @@ void Grayscale::apply(Image &img) const {
     }
   }
 }
+
+Grayscale
+Grayscale::read(ConfigReader &cr,
+                std::map<std::string, std::unordered_set<std::string>> &names,
+                const std::map<std::string, Luminance> &luminances) {
+  cr.assert_char({' '});
+  auto lum_name_opt = cr.assert_word(names["luminance"]);
+  if (!lum_name_opt.has_value()) {
+    throw cr.except("Missing luminance value!");
+  }
+  return {luminances.at(std::move(*lum_name_opt))};
+}
