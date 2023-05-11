@@ -11,7 +11,7 @@ V případě neexistujících, nečitelných, či duplicitních cest se program 
 - Načítat konfigurační soubor, včetně indikace chyby (přesný řádek a přibližný sloupec)
 - Z konfiguračního souboru bude načítat ASCII přechody, světlosti, barvy, styly
   a filtrové pipeliny (více filtrů v jednom balíčku)
-- Filtry: změna jasu, zšedivění, negativ, změna velikosti obrázku, rozostření, zostření
+- Filtry: brightness, grayscale, negative, upscale, downscale, threshold, rotate
 - Individuálně aplikované filtry/pipeliny na jednotlivé obrázky
 - Individuálně aplikované styly na jednotlivé obrázky
 - Prezentace jednotlivých snímků bude ovládána přes standardní vstup
