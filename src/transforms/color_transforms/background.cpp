@@ -1,5 +1,4 @@
-#include "color_transform_bg.h"
-#include "util.h"
+#include "background.h"
 
 BackgroundColorTransform::BackgroundColorTransform(Color c) : color(c) {}
 

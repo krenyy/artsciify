@@ -1,5 +1,4 @@
-#include "color_transform_fg.h"
-#include "util.h"
+#include "foreground.h"
 
 ForegroundColorTransform::ForegroundColorTransform(Color c) : color(c) {}
 

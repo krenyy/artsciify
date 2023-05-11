@@ -22,6 +22,8 @@ DOC_DIR=doc
 SRCS=$(wildcard $(SRC_DIR)/*.cpp)
 SRCS+=$(wildcard $(SRC_DIR)/filters/*.cpp)
 SRCS+=$(wildcard $(SRC_DIR)/transforms/*.cpp)
+SRCS+=$(wildcard $(SRC_DIR)/transforms/color_transforms/*.cpp)
+SRCS+=$(wildcard $(SRC_DIR)/transforms/text_transforms/*.cpp)
 OBJS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 DEPS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRCS))
 

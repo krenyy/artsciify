@@ -1,10 +1,10 @@
 #include "config.h"
-#include "transforms/color_transform_bg.h"
-#include "transforms/color_transform_bg_frompixel.h"
-#include "transforms/color_transform_fg.h"
-#include "transforms/color_transform_fg_frompixel.h"
-#include "transforms/text_transform_ascii.h"
-#include "transforms/text_transform_string.h"
+#include "transforms/color_transforms/background.h"
+#include "transforms/color_transforms/background_from_pixel.h"
+#include "transforms/color_transforms/foreground.h"
+#include "transforms/color_transforms/foreground_from_pixel.h"
+#include "transforms/text_transforms/ascii.h"
+#include "transforms/text_transforms/string.h"
 #include <fstream>
 
 ConfigReader::ConfigReader(std::filesystem::path p)

@@ -1,5 +1,4 @@
-#include "color_transform_fg_frompixel.h"
-#include "util.h"
+#include "foreground_from_pixel.h"
 
 void FromPixelForegroundColorTransform::apply(std::string &s,
                                               const Color pixel) const {

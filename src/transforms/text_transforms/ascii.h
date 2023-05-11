@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../luminance.h"
+#include "../../luminance.h"
 #include "text_transform.h"
 #include <map>
 #include <optional>

@@ -1,6 +1,4 @@
-#include "util.h"
-#include "../color.h"
-#include <string>
+#include "color_transform.h"
 
 std::string rgb_to_fg_color_code(const Color c) {
   return "\033[38;2;" + std::to_string((int)c.r()) + ";" +

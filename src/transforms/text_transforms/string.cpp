@@ -1,4 +1,4 @@
-#include "text_transform_string.h"
+#include "string.h"
 
 StringTextTransform::StringTextTransform(std::string str) : s(str) {}
 
