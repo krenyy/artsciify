@@ -1,16 +1,24 @@
 NAME=artsciify
 
+CMNFLAGS=
+
 CXX=g++
-CXXFLAGS=-c -std=c++17 -Wall -Wextra -Werror -Wpedantic -Weffc++ -Wshadow -Wconversion -Wsign-conversion \
-				 -Wfloat-equal -Wunused -Wuninitialized -Woverloaded-virtual -Wformat -Wmissing-declarations \
-				 -Wcast-qual -Wnull-dereference
+CXXFLAGS=-c
 
 LD=g++
 LDFLAGS=-lpng
 
-ifdef DEBUG
-	CXXFLAGS+=-g -fsanitize=address
-	LDFLAGS+=-fsanitize=address
+ifdef RELEASE
+
+CXXFLAGS+=-O2
+
+else
+
+CMNFLAGS+=-fsanitize=address
+CXXFLAGS+=-std=c++17 -Wall -Wextra -Werror -Wpedantic -Weffc++ -Wshadow -Wconversion -Wsign-conversion \
+          -Wfloat-equal -Wunused -Wuninitialized -Woverloaded-virtual -Wformat -Wmissing-declarations \
+          -Wcast-qual -Wnull-dereference
+
 endif
 
 TARGET=$(NAME)
@@ -47,10 +55,10 @@ run: compile
 	./$(TARGET)
 
 $(TARGET): $(OBJS) | create_build_dir
-	$(LD) -o $(TARGET) $(LDFLAGS) $^
+	$(LD) -o $(TARGET) $(CMNFLAGS) $(LDFLAGS) $^
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $<
+	$(CXX) $(CMNFLAGS) $(CXXFLAGS) -o $@ $<
 
 
 ifeq (,$(filter clean,$(MAKECMDGOALS)))
