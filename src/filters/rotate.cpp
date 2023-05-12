@@ -11,7 +11,7 @@ void Rotate::apply(Image &img) const {
     }
   }
   for (size_t i = 0; i < (new_image.height() / 2); ++i) {
-    new_image[i].swap(new_image[img.height() - i - 1]);
+    new_image[i].swap(new_image[new_image.height() - i - 1]);
   }
   img = new_image;
 }
