@@ -232,14 +232,14 @@ void Presentation::handle_input() {
     }
     if (input == "w") {
       std::cerr << "select write destination:\n";
-      std::cerr << "  stdout\n";
-      std::cerr << "  file\n";
+      std::cerr << "  std[o]ut\n";
+      std::cerr << "  [f]ile\n";
       std::cerr << ": ";
 
       input = read_input();
       std::cerr << std::endl;
 
-      if (input == "stdout") {
+      if (input == "o") {
         for (const auto &[_, pipeline] : pipelines.at(current_image)) {
           pipeline->apply(images[current_image]);
         }
@@ -258,7 +258,7 @@ void Presentation::handle_input() {
         }
         return;
       }
-      if (input == "file") {
+      if (input == "f") {
         std::filesystem::path dst(paths.at(current_image));
         dst.replace_extension(".txt");
 
