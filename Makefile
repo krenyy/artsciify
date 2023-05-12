@@ -3,7 +3,7 @@ NAME=kronemar
 CMNFLAGS=
 
 CXX=g++
-CXXFLAGS=-std=c++17 -c
+CXXFLAGS=-std=c++17 -c -O2
 
 LD=g++
 LDFLAGS=-lstdc++fs -lpng
@@ -11,13 +11,9 @@ LDFLAGS=-lstdc++fs -lpng
 ifdef DEBUG
 
 CMNFLAGS+=-fsanitize=address
-CXXFLAGS+=-std=c++17 -Wall -Wextra -Werror -Wpedantic -Weffc++ -Wshadow -Wconversion -Wsign-conversion \
+CXXFLAGS+=-g -std=c++17 -Wall -Wextra -Werror -Wpedantic -Weffc++ -Wshadow -Wconversion -Wsign-conversion \
           -Wfloat-equal -Wunused -Wuninitialized -Woverloaded-virtual -Wformat -Wmissing-declarations \
           -Wcast-qual -Wnull-dereference
-
-else
-
-CXXFLAGS+=-O2
 
 endif
 
