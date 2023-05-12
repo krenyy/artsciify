@@ -6,6 +6,7 @@
 #include "rotate.h"
 #include "threshold.h"
 #include "upscale.h"
+#include <memory>
 
 FilterPipeline::FilterPipeline(std::vector<std::shared_ptr<Filter>> f)
     : filters(std::move(f)) {}
@@ -13,6 +14,14 @@ FilterPipeline::FilterPipeline(std::vector<std::shared_ptr<Filter>> f)
 void FilterPipeline::apply(Image &img) const {
   for (const std::shared_ptr<Filter> &f : filters) {
     f->apply(img);
+  }
+}
+void FilterPipeline::apply_without_scaling(Image &img) const {
+  for (const std::shared_ptr<Filter> &f : filters) {
+    if (!std::dynamic_pointer_cast<Upscale>(f) &&
+        !std::dynamic_pointer_cast<Downscale>(f)) {
+      f->apply(img);
+    }
   }
 }
 
@@ -64,4 +73,24 @@ FilterPipeline FilterPipeline::read(
     cr.next_line();
   }
   return {filters};
+}
+
+void FilterPipeline::get_final_dimensions(size_t &width, size_t &height,
+                                          size_t &max_width,
+                                          size_t &max_height) const {
+  for (const auto &f : filters) {
+    if (const auto pipeline = std::dynamic_pointer_cast<FilterPipeline>(f)) {
+      pipeline->get_final_dimensions(width, height, max_width, max_height);
+    }
+    if (std::dynamic_pointer_cast<Upscale>(f)) {
+      width *= 2;
+      height *= 2;
+    }
+    max_width = width > max_width ? width : max_width;
+    max_height = height > max_height ? height : max_height;
+    if (std::dynamic_pointer_cast<Downscale>(f)) {
+      width = (width + 1) / 2;
+      height = (height + 1) / 2;
+    }
+  }
 }

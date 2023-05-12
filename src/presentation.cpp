@@ -1,9 +1,11 @@
 #include "presentation.h"
 #include "filters/downscale.h"
+#include "filters/upscale.h"
 #include "png.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 Presentation::Presentation(Config cfg,
                            std::vector<std::filesystem::path> image_paths)
@@ -44,6 +46,34 @@ void Presentation::handle_input() {
       std::cerr << "preview dimensions: " << previews[current_image].width()
                 << 'x' << previews[current_image].height() << std::endl;
     }
+    size_t final_width = images[current_image].width();
+    size_t final_height = images[current_image].height();
+    size_t max_width = final_width;
+    size_t max_height = final_height;
+    for (const auto &[_, pipeline] : pipelines[current_image]) {
+      pipeline->get_final_dimensions(final_width, final_height, max_width,
+                                     max_height);
+    }
+    std::cerr << "maximum dimensions during the pipeline application: "
+              << max_width << 'x' << max_height << std::endl;
+    if (images[current_image].width() != final_width ||
+        images[current_image].height() != final_height) {
+      std::cerr << "final dimensions: " << final_width << 'x' << final_height
+                << std::endl;
+    }
+    if (final_width < max_width || final_height < max_height) {
+      std::cerr
+          << "WARNING: the final image may be smaller than intended\n         "
+             "as it is larger during the pipeline application.\n         are "
+             "you sure you are applying scaling filter correctly?"
+          << std::endl;
+    }
+    if (final_width >= 8000 || final_height >= 8000) {
+      std::cerr << "WARNING: the final image dimensions are too big\n         "
+                   "and could "
+                   "result in a slow write or even a crash!"
+                << std::endl;
+    }
     std::cerr << "current style: " << current_style[current_image] << std::endl;
     std::cerr << std::endl;
     std::cerr << "[p]rint image, [prev]/[next] image, select [s]tyle, edit "
@@ -55,7 +85,7 @@ void Presentation::handle_input() {
     if (buf == "p") {
       Image tmp_preview = previews[current_image];
       for (const auto &[_, pipeline] : pipelines[current_image]) {
-        pipeline->apply(tmp_preview);
+        pipeline->apply_without_scaling(tmp_preview);
       }
       std::cerr
           << config.styles.at(current_style[current_image]).print(tmp_preview);
