@@ -30,3 +30,5 @@ možnost vložit pipeline do další pipeline (`FilterPipeline` bude dědit z `F
 
 - Filtry a pipeliny
 - Pixelové transformace
+
+Grafy lze vygenerovat pomocí `make doc`
