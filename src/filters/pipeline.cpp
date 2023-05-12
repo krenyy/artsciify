@@ -3,6 +3,7 @@
 #include "downscale.h"
 #include "grayscale.h"
 #include "negative.h"
+#include "rotate.h"
 #include "threshold.h"
 #include "upscale.h"
 
@@ -24,7 +25,7 @@ FilterPipeline FilterPipeline::read(
   for (;;) {
     auto filter_name_opt =
         cr.assert_word({"FilterPipeline", "Grayscale", "Brightness", "Negative",
-                        "Threshold", "Upscale", "Downscale"});
+                        "Threshold", "Upscale", "Downscale", "Rotate"});
     if (!filter_name_opt.has_value()) {
       break;
     }
@@ -56,6 +57,9 @@ FilterPipeline FilterPipeline::read(
     }
     if (filter_name == "Downscale") {
       filters.push_back(std::make_shared<Downscale>());
+    }
+    if (filter_name == "Rotate") {
+      filters.push_back(std::make_shared<Rotate>());
     }
     cr.next_line();
   }
