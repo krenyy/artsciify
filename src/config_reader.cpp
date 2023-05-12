@@ -29,7 +29,7 @@ void ConfigReader::next_line() {
     throw except("Garbage at the end of line: \"" +
                  lines[row].substr(col, lines[row].size()) + "\"!");
   }
-  if (row == lines.size()) {
+  if (row >= lines.size()) {
     throw except("Unexpected end of file!");
   }
   const std::string &line = lines[row];
@@ -45,6 +45,9 @@ void ConfigReader::next_line() {
   ++row;
 }
 void ConfigReader::skip_newlines() {
+  if (row >= lines.size()) {
+    return;
+  }
   while (lines[row].size() == 0) {
     ++row;
   }
@@ -58,6 +61,9 @@ std::optional<std::string> ConfigReader::read_line() {
 }
 
 std::optional<char> ConfigReader::read_char() {
+  if (row >= lines.size()) {
+    throw except("Unexpected end of file!");
+  }
   if (col >= lines[row].size()) {
     return std::nullopt;
   }
@@ -91,6 +97,9 @@ ConfigReader::assert_char(const std::unordered_set<char> &s) {
 }
 
 std::optional<std::string> ConfigReader::read_word() {
+  if (row >= lines.size()) {
+    throw except("Unexpected end of file!");
+  }
   const std::string &line = lines[row];
   std::string cur_to_end = line.substr(col, line.size());
   auto rel_end_space = cur_to_end.find_first_of(' ');
