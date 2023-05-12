@@ -1,23 +1,23 @@
-NAME=artsciify
+NAME=kronemar
 
 CMNFLAGS=
 
 CXX=g++
-CXXFLAGS=-c
+CXXFLAGS=-std=c++17 -c
 
 LD=g++
-LDFLAGS=-lpng
+LDFLAGS=-lstdc++fs -lpng
 
-ifdef RELEASE
-
-CXXFLAGS+=-O2
-
-else
+ifdef DEBUG
 
 CMNFLAGS+=-fsanitize=address
 CXXFLAGS+=-std=c++17 -Wall -Wextra -Werror -Wpedantic -Weffc++ -Wshadow -Wconversion -Wsign-conversion \
           -Wfloat-equal -Wunused -Wuninitialized -Woverloaded-virtual -Wformat -Wmissing-declarations \
           -Wcast-qual -Wnull-dereference
+
+else
+
+CXXFLAGS+=-O2
 
 endif
 
@@ -55,7 +55,7 @@ run: compile
 	./$(TARGET)
 
 $(TARGET): $(OBJS) | create_build_dir
-	$(LD) -o $(TARGET) $(CMNFLAGS) $(LDFLAGS) $^
+	$(LD) -o $(TARGET) $(CMNFLAGS) $^ $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CMNFLAGS) $(CXXFLAGS) -o $@ $<
