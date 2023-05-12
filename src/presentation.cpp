@@ -211,11 +211,17 @@ void Presentation::handle_input() {
             for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
               buf += c;
             }
+            size_t input_size = buf.size();
             size_t selected;
+            size_t pos;
             try {
-              selected = std::stoul(buf);
+              selected = std::stoul(buf, &pos);
             } catch (const std::exception &) {
-              std::cerr << "\ninvalid index\n";
+              std::cerr << "\ninvalid index" << std::endl;
+              return;
+            }
+            if (pos != input_size) {
+              std::cerr << "\ninvalid input" << std::endl;
               return;
             }
             if (selected >= img_pipeline.size()) {
