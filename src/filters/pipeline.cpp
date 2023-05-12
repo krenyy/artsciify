@@ -1,8 +1,10 @@
 #include "pipeline.h"
 #include "brightness.h"
+#include "downscale.h"
 #include "grayscale.h"
 #include "negative.h"
 #include "threshold.h"
+#include "upscale.h"
 
 FilterPipeline::FilterPipeline(std::vector<std::shared_ptr<Filter>> f)
     : filters(std::move(f)) {}
@@ -20,8 +22,9 @@ FilterPipeline FilterPipeline::read(
     std::map<std::string, std::shared_ptr<FilterPipeline>> &pipelines) {
   std::vector<std::shared_ptr<Filter>> filters;
   for (;;) {
-    auto filter_name_opt = cr.assert_word(
-        {"FilterPipeline", "Grayscale", "Brightness", "Negative", "Threshold"});
+    auto filter_name_opt =
+        cr.assert_word({"FilterPipeline", "Grayscale", "Brightness", "Negative",
+                        "Threshold", "Upscale", "Downscale"});
     if (!filter_name_opt.has_value()) {
       break;
     }
@@ -47,6 +50,12 @@ FilterPipeline FilterPipeline::read(
     }
     if (filter_name == "Threshold") {
       filters.push_back(std::make_shared<Threshold>(Threshold::read(cr)));
+    }
+    if (filter_name == "Upscale") {
+      filters.push_back(std::make_shared<Upscale>());
+    }
+    if (filter_name == "Downscale") {
+      filters.push_back(std::make_shared<Downscale>());
     }
     cr.next_line();
   }

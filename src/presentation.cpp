@@ -1,5 +1,5 @@
 #include "presentation.h"
-#include "filters/scale.h"
+#include "filters/downscale.h"
 #include "png.h"
 #include <filesystem>
 #include <fstream>
@@ -17,7 +17,7 @@ Presentation::Presentation(Config cfg,
     Image preview_img = img;
     while (preview_img.height() > config.preview_side_limit ||
            preview_img.width() > config.preview_side_limit) {
-      Scale().apply(preview_img);
+      Downscale().apply(preview_img);
     }
     previews.push_back(std::move(preview_img));
   }

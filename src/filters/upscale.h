@@ -2,7 +2,7 @@
 
 #include "filter.h"
 
-class Scale : public Filter {
+class Upscale : public Filter {
 public:
   void apply(Image &img) const override;
 };
