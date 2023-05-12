@@ -45,10 +45,7 @@ void ConfigReader::next_line() {
   ++row;
 }
 void ConfigReader::skip_newlines() {
-  if (row >= lines.size()) {
-    return;
-  }
-  while (lines[row].size() == 0) {
+  while (row < lines.size() && lines[row].size() == 0) {
     ++row;
   }
 }
