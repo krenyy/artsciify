@@ -14,6 +14,7 @@ public:
   void start();
   void handle_input();
   std::string read_input() const;
+  std::optional<long> read_integer() const;
 
 private:
   Config config;

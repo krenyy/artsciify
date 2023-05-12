@@ -108,19 +108,28 @@ void Presentation::handle_input() {
     }
     if (input == "s") {
       std::cerr << "select a new style:\n";
+      std::vector<std::string> style_names(config.styles.size());
+      size_t i = 0;
       for (const auto &[name, _] : config.styles) {
-        std::cerr << "  " << name << '\n';
+        std::cerr << "  " << i << ". " << name << '\n';
+        style_names[i++] = name;
       }
       std::cerr << ": ";
 
-      input = read_input();
-      std::cerr << std::endl;
-
-      if (config.styles.count(input) == 0) {
-        std::cerr << "unknown style" << std::endl;
+      auto selected_opt = read_integer();
+      if (!selected_opt.has_value()) {
+        std::cerr << "\ninvalid input" << std::endl;
         return;
       }
-      current_style[current_image] = input;
+      size_t selected = static_cast<size_t>(std::move(*selected_opt));
+      std::cerr << std::endl;
+
+      if (selected >= style_names.size()) {
+        std::cerr << "invalid index!";
+        return;
+      }
+
+      current_style[current_image] = style_names[selected];
       return;
     }
     if (input == "f") {
@@ -174,14 +183,13 @@ void Presentation::handle_input() {
             std::cerr << "  [" << i << ".] \n";
             std::cerr << ": ";
 
-            input = read_input();
-            size_t selected;
-            try {
-              selected = std::stoul(input);
-            } catch (const std::exception &) {
-              std::cerr << "\ninvalid index\n";
+            auto selected_opt = read_integer();
+            if (!selected_opt.has_value()) {
+              std::cerr << "\ninvalid input" << std::endl;
               return;
             }
+            size_t selected = static_cast<size_t>(std::move(*selected_opt));
+
             if (selected > img_pipeline.size()) {
               continue;
             }
@@ -203,20 +211,13 @@ void Presentation::handle_input() {
             }
             std::cerr << ": ";
 
-            input = read_input();
-            size_t input_size = input.size();
-            size_t selected;
-            size_t pos;
-            try {
-              selected = std::stoul(input, &pos);
-            } catch (const std::exception &) {
-              std::cerr << "\ninvalid index" << std::endl;
-              return;
-            }
-            if (pos != input_size) {
+            auto selected_opt = read_integer();
+            if (!selected_opt.has_value()) {
               std::cerr << "\ninvalid input" << std::endl;
               return;
             }
+            size_t selected = static_cast<size_t>(std::move(*selected_opt));
+
             if (selected >= img_pipeline.size()) {
               continue;
             }
@@ -341,4 +342,20 @@ std::string Presentation::read_input() const {
     buf += c;
   }
   return buf;
+}
+
+std::optional<long> Presentation::read_integer() const {
+  std::string input = read_input();
+  size_t input_size = input.size();
+  size_t selected;
+  size_t pos;
+  try {
+    selected = std::stoul(input, &pos);
+  } catch (const std::exception &) {
+    return std::nullopt;
+  }
+  if (pos != input_size) {
+    return std::nullopt;
+  }
+  return selected;
 }
