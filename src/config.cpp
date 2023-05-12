@@ -21,6 +21,9 @@ Config::Config(std::filesystem::path path)
     throw cr.except("Missing preview_side_limit value!");
   }
   long preview_side_limit_long = std::move(*preview_side_limit_opt);
+  if (preview_side_limit_long <= 0) {
+    throw cr.except("preview_side_limit value is <=0 which is invalid!");
+  }
   preview_side_limit = static_cast<size_t>(std::move(preview_side_limit_long));
   cr.next_line();
   if (!cr.assert_word({"ansi_color_present"}).has_value()) {
