@@ -68,7 +68,8 @@ void Presentation::handle_input() {
              "you sure you are applying scaling filter correctly?"
           << std::endl;
     }
-    if (final_width >= 8000 || final_height >= 8000) {
+    if (final_width >= config.warning_side_limit ||
+        final_height >= config.warning_side_limit) {
       std::cerr << "WARNING: the final image dimensions are too big\n         "
                    "and could "
                    "result in a slow write or even a crash!"

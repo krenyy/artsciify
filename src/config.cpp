@@ -9,7 +9,7 @@
 #include <fstream>
 
 Config::Config(std::filesystem::path path)
-    : preview_side_limit(), styles(), pipelines() {
+    : preview_side_limit(), warning_side_limit(), styles(), pipelines() {
   ConfigReader cr(path);
   cr.skip_newlines();
   if (!cr.assert_word({"preview_side_limit"}).has_value()) {
@@ -25,6 +25,20 @@ Config::Config(std::filesystem::path path)
     throw cr.except("preview_side_limit value is <=0 which is invalid!");
   }
   preview_side_limit = static_cast<size_t>(std::move(preview_side_limit_long));
+  cr.next_line();
+  if (!cr.assert_word({"warning_side_limit"}).has_value()) {
+    throw cr.except("Missing warning_side_limit!");
+  }
+  cr.assert_char({' '});
+  auto warning_side_limit_opt = cr.read_integer();
+  if (!warning_side_limit_opt.has_value()) {
+    throw cr.except("Missing warning_side_limit value!");
+  }
+  long warning_side_limit_long = std::move(*warning_side_limit_opt);
+  if (warning_side_limit_long <= 0) {
+    throw cr.except("warning_side_limit value is <=0 which is invalid!");
+  }
+  warning_side_limit = static_cast<size_t>(std::move(warning_side_limit_long));
   cr.next_line();
   if (!cr.assert_word({"ansi_color_present"}).has_value()) {
     throw cr.except("Missing ansi_color_present!");
