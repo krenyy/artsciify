@@ -225,7 +225,9 @@ void Presentation::handle_input() {
         pipelines.erase(pipelines.begin() + cur_img);
         current_style.erase(current_style.begin() + cur_img);
         std::cerr << "written successfully!" << std::endl;
-        --current_image;
+        if (current_image == images.size()) {
+          --current_image;
+        }
         return;
       }
       if (buf == "file") {
@@ -278,7 +280,9 @@ void Presentation::handle_input() {
         pipelines.erase(pipelines.begin() + cur_img);
         current_style.erase(current_style.begin() + cur_img);
         std::cerr << '\n' << dst << " written successfully!" << std::endl;
-        --current_image;
+        if (current_image == images.size()) {
+          --current_image;
+        }
         return;
       }
       std::cerr << "wrong option!" << std::endl;
