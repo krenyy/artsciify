@@ -125,7 +125,7 @@ void Presentation::handle_input() {
       std::cerr << std::endl;
 
       if (selected >= style_names.size()) {
-        std::cerr << "invalid index!";
+        std::cerr << "invalid index" << std::endl;
         return;
       }
 
@@ -143,27 +143,38 @@ void Presentation::handle_input() {
       std::cerr << std::endl;
 
       for (;;) {
-        std::cerr << "[a]dd, [d]elete: ";
+        std::cerr << "[a]dd";
+        if (!img_pipeline.empty()) {
+          std::cerr << ", [d]elete";
+        }
+        std::cerr << ": ";
 
         input = read_input();
         std::cerr << std::endl;
 
         if (input == "a") {
           std::cerr << "select a filter pipeline:\n";
+
+          std::vector<std::string> pipeline_names(config.pipelines.size());
+          size_t i = 0;
           for (const auto &[name, _] : config.pipelines) {
-            std::cerr << "  " << name << '\n';
+            std::cerr << "  " << i << ". " << name << '\n';
+            pipeline_names[i++] = name;
           }
           std::cerr << ": ";
 
-          input = read_input();
-          std::cerr << std::endl;
-
-          if (config.pipelines.count(input) == 0) {
-            std::cerr << "unknown filter pipeline" << std::endl;
+          auto selected_opt = read_integer();
+          if (!selected_opt.has_value()) {
+            std::cerr << "\ninvalid input" << std::endl;
             return;
           }
+          size_t selected = static_cast<size_t>(std::move(*selected_opt));
 
-          std::string pipeline_name = input;
+          if (selected >= pipeline_names.size()) {
+            std::cerr << "\ninvalid index" << std::endl;
+          }
+
+          std::string pipeline_name = pipeline_names[selected];
           std::shared_ptr<FilterPipeline> pipeline =
               config.pipelines.at(pipeline_name);
 
@@ -175,7 +186,7 @@ void Presentation::handle_input() {
 
           for (;;) {
             std::cerr << "select a position to insert the pipeline at\n";
-            size_t i = 0;
+            i = 0;
             for (const auto &[name, _] : img_pipeline) {
               std::cerr << "  " << i << ". " << name << '\n';
               ++i;
@@ -183,12 +194,12 @@ void Presentation::handle_input() {
             std::cerr << "  [" << i << ".] \n";
             std::cerr << ": ";
 
-            auto selected_opt = read_integer();
+            selected_opt = read_integer();
             if (!selected_opt.has_value()) {
               std::cerr << "\ninvalid input" << std::endl;
               return;
             }
-            size_t selected = static_cast<size_t>(std::move(*selected_opt));
+            selected = static_cast<size_t>(std::move(*selected_opt));
 
             if (selected > img_pipeline.size()) {
               continue;
@@ -201,7 +212,7 @@ void Presentation::handle_input() {
           }
           return;
         }
-        if (input == "d") {
+        if (!img_pipeline.empty() && input == "d") {
           for (;;) {
             std::cerr << "select a pipeline to delete\n";
             size_t i = 0;
