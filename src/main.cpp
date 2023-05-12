@@ -11,10 +11,10 @@ int main(int argc, char **argv) {
     }
     std::vector<std::filesystem::path> image_paths;
     {
-      std::unordered_set<std::filesystem::path> image_paths_set;
+      std::unordered_set<std::string> image_paths_set;
       for (int i = 1; i < argc; ++i) {
         std::filesystem::path p(argv[i]);
-        if (image_paths_set.count(p) != 0) {
+        if (image_paths_set.count(p.string()) != 0) {
           throw std::runtime_error('"' + p.string() +
                                    "\" already provided once!");
         }
