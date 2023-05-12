@@ -300,6 +300,12 @@ void Presentation::handle_input() {
           pipeline->apply(images[current_image]);
         }
         std::ofstream ofs(dst);
+        if (!ofs.good()) {
+          std::cerr << "\ncouldn't open file (either inaccessible directory, "
+                       "or permission denied!)"
+                    << std::endl;
+          return;
+        }
         ofs << config.styles.at(current_style[current_image])
                    .print(images[current_image])
             << std::endl;
