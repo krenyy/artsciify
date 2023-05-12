@@ -13,6 +13,7 @@ public:
   Presentation(Config cfg, std::vector<std::filesystem::path> image_paths);
   void start();
   void handle_input();
+  std::string read_input() const;
 
 private:
   Config config;

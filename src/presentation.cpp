@@ -33,9 +33,7 @@ void Presentation::start() {
 }
 
 void Presentation::handle_input() {
-  std::string buf;
   for (;;) {
-    buf.clear();
     std::cerr << std::endl;
     std::cerr << "current image: " << paths[current_image] << " ("
               << current_image + 1 << '/' << images.size() << ")" << std::endl;
@@ -79,11 +77,11 @@ void Presentation::handle_input() {
     std::cerr << std::endl;
     std::cerr << "[p]rint image, [prev]/[next] image, select [s]tyle, edit "
                  "[f]ilter pipeline, [w]rite image, [q]uit: ";
-    for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
-      buf += c;
-    }
+
+    std::string input = read_input();
     std::cerr << std::endl;
-    if (buf == "p") {
+
+    if (input == "p") {
       Image tmp_preview = previews[current_image];
       for (const auto &[_, pipeline] : pipelines[current_image]) {
         pipeline->apply_without_scaling(tmp_preview);
@@ -92,7 +90,7 @@ void Presentation::handle_input() {
           << config.styles.at(current_style[current_image]).print(tmp_preview);
       return;
     }
-    if (buf == "prev") {
+    if (input == "prev") {
       if (current_image == 0) {
         std::cerr << "you're already on the first image" << std::endl;
         return;
@@ -100,7 +98,7 @@ void Presentation::handle_input() {
       --current_image;
       return;
     }
-    if (buf == "next") {
+    if (input == "next") {
       if (current_image == (images.size() - 1)) {
         std::cerr << "you're already on the last image" << std::endl;
         return;
@@ -108,25 +106,24 @@ void Presentation::handle_input() {
       ++current_image;
       return;
     }
-    if (buf == "s") {
-      buf.clear();
+    if (input == "s") {
       std::cerr << "select a new style:\n";
       for (const auto &[name, _] : config.styles) {
         std::cerr << "  " << name << '\n';
       }
       std::cerr << ": ";
-      for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
-        buf += c;
-      }
+
+      input = read_input();
       std::cerr << std::endl;
-      if (config.styles.count(buf) == 0) {
+
+      if (config.styles.count(input) == 0) {
         std::cerr << "unknown style" << std::endl;
         return;
       }
-      current_style[current_image] = buf;
+      current_style[current_image] = input;
       return;
     }
-    if (buf == "f") {
+    if (input == "f") {
       std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
           &img_pipeline = pipelines.at(current_image);
 
@@ -137,28 +134,27 @@ void Presentation::handle_input() {
       std::cerr << std::endl;
 
       for (;;) {
-        buf.clear();
         std::cerr << "[a]dd, [d]elete: ";
-        for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
-          buf += c;
-        }
-        if (buf == "a") {
-          buf.clear();
+
+        input = read_input();
+        std::cerr << std::endl;
+
+        if (input == "a") {
           std::cerr << "select a filter pipeline:\n";
           for (const auto &[name, _] : config.pipelines) {
             std::cerr << "  " << name << '\n';
           }
           std::cerr << ": ";
-          for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
-            buf += c;
-          }
+
+          input = read_input();
           std::cerr << std::endl;
-          if (config.pipelines.count(buf) == 0) {
+
+          if (config.pipelines.count(input) == 0) {
             std::cerr << "unknown filter pipeline" << std::endl;
             return;
           }
 
-          std::string pipeline_name = buf;
+          std::string pipeline_name = input;
           std::shared_ptr<FilterPipeline> pipeline =
               config.pipelines.at(pipeline_name);
 
@@ -169,7 +165,6 @@ void Presentation::handle_input() {
           }
 
           for (;;) {
-            buf.clear();
             std::cerr << "select a position to insert the pipeline at\n";
             size_t i = 0;
             for (const auto &[name, _] : img_pipeline) {
@@ -178,12 +173,11 @@ void Presentation::handle_input() {
             }
             std::cerr << "  [" << i << ".] \n";
             std::cerr << ": ";
-            for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
-              buf += c;
-            }
+
+            input = read_input();
             size_t selected;
             try {
-              selected = std::stoul(buf);
+              selected = std::stoul(input);
             } catch (const std::exception &) {
               std::cerr << "\ninvalid index\n";
               return;
@@ -199,9 +193,8 @@ void Presentation::handle_input() {
           }
           return;
         }
-        if (buf == "d") {
+        if (input == "d") {
           for (;;) {
-            buf.clear();
             std::cerr << "select a pipeline to delete\n";
             size_t i = 0;
             for (const auto &[name, _] : img_pipeline) {
@@ -209,14 +202,13 @@ void Presentation::handle_input() {
               ++i;
             }
             std::cerr << ": ";
-            for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
-              buf += c;
-            }
-            size_t input_size = buf.size();
+
+            input = read_input();
+            size_t input_size = input.size();
             size_t selected;
             size_t pos;
             try {
-              selected = std::stoul(buf, &pos);
+              selected = std::stoul(input, &pos);
             } catch (const std::exception &) {
               std::cerr << "\ninvalid index" << std::endl;
               return;
@@ -238,17 +230,16 @@ void Presentation::handle_input() {
         return;
       }
     }
-    if (buf == "w") {
-      buf.clear();
+    if (input == "w") {
       std::cerr << "select write destination:\n";
       std::cerr << "  stdout\n";
       std::cerr << "  file\n";
       std::cerr << ": ";
-      for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
-        buf += c;
-      }
+
+      input = read_input();
       std::cerr << std::endl;
-      if (buf == "stdout") {
+
+      if (input == "stdout") {
         for (const auto &[_, pipeline] : pipelines.at(current_image)) {
           pipeline->apply(images[current_image]);
         }
@@ -267,16 +258,17 @@ void Presentation::handle_input() {
         }
         return;
       }
-      if (buf == "file") {
-        buf.clear();
+      if (input == "file") {
         std::filesystem::path dst(paths.at(current_image));
         dst.replace_extension(".txt");
+
         std::cerr << "type in a file path (default is " << dst << "): ";
-        for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
-          buf += c;
-        }
-        if (buf != "") {
-          dst = buf;
+
+        input = read_input();
+        std::cerr << std::endl;
+
+        if (input != "") {
+          dst = input;
         }
         if (std::filesystem::exists(dst) &&
             !std::filesystem::is_regular_file(dst)) {
@@ -287,16 +279,15 @@ void Presentation::handle_input() {
         if (std::filesystem::exists(dst) &&
             std::filesystem::is_regular_file(dst)) {
           for (;;) {
-            buf.clear();
             std::cerr
                 << "file already exists, do you want to overwrite it? [y/n]: ";
-            for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
-              buf += c;
-            }
-            if (buf == "y") {
+
+            input = read_input();
+
+            if (input == "y") {
               break;
             }
-            if (buf == "n") {
+            if (input == "n") {
               std::cerr << "\naborted!" << std::endl;
               return;
             }
@@ -322,7 +313,7 @@ void Presentation::handle_input() {
         previews.erase(previews.begin() + cur_img);
         pipelines.erase(pipelines.begin() + cur_img);
         current_style.erase(current_style.begin() + cur_img);
-        std::cerr << '\n' << dst << " written successfully!" << std::endl;
+        std::cerr << dst << " written successfully!" << std::endl;
         if (current_image == images.size()) {
           --current_image;
         }
@@ -331,9 +322,23 @@ void Presentation::handle_input() {
       std::cerr << "wrong option!" << std::endl;
       return;
     }
-    if (buf == "q") {
+    if (input == "q") {
       throw std::runtime_error("quitting!");
     }
-    std::cerr << "invalid option: " << buf << std::endl;
+    std::cerr << "invalid option: " << input << std::endl;
   }
+}
+
+std::string Presentation::read_input() const {
+  std::string buf;
+  for (char c; (c = static_cast<char>(std::cin.get())) != '\n';) {
+    if (c == EOF) {
+      throw std::runtime_error("unexpected end of input!");
+    }
+    if (std::iscntrl(c)) {
+      continue;
+    }
+    buf += c;
+  }
+  return buf;
 }
