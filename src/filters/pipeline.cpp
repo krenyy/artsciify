@@ -1,12 +1,11 @@
 #include "pipeline.h"
 #include "brightness.h"
-#include "downscale.h"
 #include "grayscale.h"
 #include "negative.h"
 #include "rotate.h"
+#include "scaling/downscale.h"
+#include "scaling/upscale.h"
 #include "threshold.h"
-#include "upscale.h"
-#include <memory>
 
 FilterPipeline::FilterPipeline(std::vector<std::shared_ptr<Filter>> f)
     : filters(std::move(f)) {}
@@ -18,10 +17,7 @@ void FilterPipeline::apply(Image &img) const {
 }
 void FilterPipeline::apply_without_scaling(Image &img) const {
   for (const std::shared_ptr<Filter> &f : filters) {
-    if (!std::dynamic_pointer_cast<Upscale>(f) &&
-        !std::dynamic_pointer_cast<Downscale>(f)) {
-      f->apply(img);
-    }
+    f->apply_without_scaling(img);
   }
 }
 
@@ -79,18 +75,6 @@ void FilterPipeline::get_final_dimensions(size_t &width, size_t &height,
                                           size_t &max_width,
                                           size_t &max_height) const {
   for (const auto &f : filters) {
-    if (const auto pipeline = std::dynamic_pointer_cast<FilterPipeline>(f)) {
-      pipeline->get_final_dimensions(width, height, max_width, max_height);
-    }
-    if (std::dynamic_pointer_cast<Upscale>(f)) {
-      width *= 2;
-      height *= 2;
-    }
-    max_width = width > max_width ? width : max_width;
-    max_height = height > max_height ? height : max_height;
-    if (std::dynamic_pointer_cast<Downscale>(f)) {
-      width = (width + 1) / 2;
-      height = (height + 1) / 2;
-    }
+    f->get_final_dimensions(width, height, max_width, max_height);
   }
 }

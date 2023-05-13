@@ -1,11 +1,9 @@
 #include "presentation.h"
-#include "filters/downscale.h"
-#include "filters/upscale.h"
+#include "filters/scaling/downscale.h"
 #include "png.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <memory>
 
 Presentation::Presentation(Config cfg,
                            std::vector<std::filesystem::path> image_paths)

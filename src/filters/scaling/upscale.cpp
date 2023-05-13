@@ -15,3 +15,11 @@ void Upscale::apply(Image &img) const {
     img[img.height() - i - 1] = img[(img.height() - i - 1) / 2];
   }
 }
+void Upscale::get_final_dimensions(size_t &width, size_t &height,
+                                   size_t &max_width,
+                                   size_t &max_height) const {
+  width *= 2;
+  height *= 2;
+  max_width = width > max_width ? width : max_width;
+  max_height = height > max_height ? height : max_height;
+}
