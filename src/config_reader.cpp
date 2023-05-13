@@ -24,7 +24,7 @@ ConfigReader::ConfigReader(std::filesystem::path p)
         break;
       }
       line.push_back(c);
-      if (line.size() > 10000) {
+      if (line.size() > 1000) {
         throw except("line is too long!");
       }
     }
@@ -33,7 +33,7 @@ ConfigReader::ConfigReader(std::filesystem::path p)
       continue;
     }
     lines.push_back(line);
-    if (lines.size() > 10000) {
+    if (lines.size() > 5000) {
       throw except("way too many lines!");
     }
   }
