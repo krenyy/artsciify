@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 
+/// A structure representing a color.
 struct Color {
   Color();
   Color(uint8_t r, uint8_t g, uint8_t b);
@@ -20,6 +21,7 @@ struct Color {
   std::array<uint8_t, 3>::iterator begin();
   std::array<uint8_t, 3>::iterator end();
 
+  /// Reads a Color using a ConfigReader instance.
   static Color read(ConfigReader &cr);
 
   std::array<uint8_t, 3> rgb;
