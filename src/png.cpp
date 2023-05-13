@@ -10,9 +10,6 @@ std::runtime_error PngImage::except(const std::string &s) const {
   return std::runtime_error(oss.str());
 }
 
-/* heavily inspired by:
- * https://web.archive.org/web/20230421230936/https://gist.github.com/niw/5963798
- */
 Image PngImage::read() const {
   if (!std::filesystem::exists(path)) {
     throw except("file doesn't exist!");
