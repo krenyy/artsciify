@@ -193,11 +193,20 @@ std::optional<long> ConfigReader::read_integer() {
   if (!word_opt.has_value()) {
     return std::nullopt;
   }
+  std::string word = std::move(*word_opt);
+  size_t word_size = word.size();
+  size_t pos;
+  long n;
   try {
-    return std::stol(std::move(*word_opt));
+    n = std::stol(std::move(word), &pos);
   } catch (const std::exception &) {
     return std::nullopt;
   }
+  if (pos != word_size) {
+    col -= word_size;
+    throw except("Invalid integer!");
+  }
+  return n;
 }
 std::optional<uint8_t> ConfigReader::read_uint8() {
   auto integer_opt = read_integer();
