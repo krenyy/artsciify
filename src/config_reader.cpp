@@ -40,14 +40,14 @@ ConfigReader::ConfigReader(std::filesystem::path p)
 }
 
 void ConfigReader::next_line() {
-  if (lines[row].size() > col) {
+  if (lines.at(row).size() > col) {
     throw except("Garbage at the end of line: \"" +
-                 lines[row].substr(col, lines[row].size()) + "\"!");
+                 lines.at(row).substr(col, lines.at(row).size()) + "\"!");
   }
   if (row >= lines.size()) {
     throw except("Unexpected end of file!");
   }
-  const std::string &line = lines[row];
+  const std::string &line = lines.at(row);
   col = 0;
   size_t i = 0;
   for (const char c : line) {
@@ -60,7 +60,7 @@ void ConfigReader::next_line() {
   ++row;
 }
 void ConfigReader::skip_newlines() {
-  while (row < lines.size() && lines[row].size() == 0) {
+  while (row < lines.size() && lines.at(row).size() == 0) {
     ++row;
   }
 }
@@ -68,18 +68,18 @@ std::optional<std::string> ConfigReader::read_line() {
   if (row >= lines.size() || col != 0) {
     return std::nullopt;
   }
-  col = lines[row].size();
-  return lines[row];
+  col = lines.at(row).size();
+  return lines.at(row);
 }
 
 std::optional<char> ConfigReader::read_char() {
   if (row >= lines.size()) {
     throw except("Unexpected end of file!");
   }
-  if (col >= lines[row].size()) {
+  if (col >= lines.at(row).size()) {
     return std::nullopt;
   }
-  return lines[row][col++];
+  return lines.at(row).at(col++);
 }
 std::optional<char>
 ConfigReader::assert_char(const std::unordered_set<char> &s) {
@@ -112,7 +112,7 @@ std::optional<std::string> ConfigReader::read_word() {
   if (row >= lines.size()) {
     throw except("Unexpected end of file!");
   }
-  const std::string &line = lines[row];
+  const std::string &line = lines.at(row);
   std::string cur_to_end = line.substr(col, line.size());
   auto rel_end_space = cur_to_end.find_first_of(' ');
   auto rel_end_tab = cur_to_end.find_first_of('\t');
@@ -237,7 +237,7 @@ bool ConfigReader::eof() const { return row >= lines.size(); }
 size_t ConfigReader::get_col() const { return col; }
 size_t ConfigReader::get_row() const { return row; }
 size_t ConfigReader::get_current_line_length() const {
-  return lines[row].size();
+  return lines.at(row).size();
 }
 
 std::runtime_error ConfigReader::except(const std::string msg) const {
