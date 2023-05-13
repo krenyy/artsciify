@@ -15,12 +15,24 @@ ConfigReader::ConfigReader(std::filesystem::path p)
   }
   while (!is.eof()) {
     std::string line;
-    std::getline(is, line);
+    line.clear();
+    for (char c; (c = static_cast<char>(is.get())) != '\n';) {
+      if (c == EOF) {
+        break;
+      }
+      line.push_back(c);
+      if (line.size() > 10000) {
+        throw except("line is too long!");
+      }
+    }
     if (line.size() >= 2 && line.substr(0, 2) == "//") {
       lines.emplace_back();
       continue;
     }
     lines.push_back(line);
+    if (lines.size() > 10000) {
+      throw except("way too many lines!");
+    }
   }
 }
 
