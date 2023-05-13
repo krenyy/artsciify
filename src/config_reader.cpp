@@ -195,7 +195,7 @@ std::optional<long> ConfigReader::read_integer() {
   }
   try {
     return std::stol(std::move(*word_opt));
-  } catch (...) {
+  } catch (const std::exception &) {
     return std::nullopt;
   }
 }
@@ -222,7 +222,7 @@ std::optional<double> ConfigReader::read_double() {
   double d;
   try {
     d = std::stod(std::move(word), &pos);
-  } catch (...) {
+  } catch (const std::exception &) {
     return std::nullopt;
   }
   if (pos != word_size) {
