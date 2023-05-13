@@ -17,6 +17,9 @@ ConfigReader::ConfigReader(std::filesystem::path p)
     std::string line;
     line.clear();
     for (char c; (c = static_cast<char>(is.get())) != '\n';) {
+      if (is.bad()) {
+        throw except("error during read!");
+      }
       if (c == EOF) {
         break;
       }

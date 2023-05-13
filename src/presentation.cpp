@@ -342,8 +342,13 @@ void Presentation::handle_write_file() {
         << std::endl;
     return;
   }
+  ofs.exceptions(std::ios::badbit | std::ios::failbit);
 
-  handle_write_to_stream(ofs);
+  try {
+    handle_write_to_stream(ofs);
+  } catch (const std::ios::failure &) {
+    std::cerr << "write failed!" << std::endl;
+  }
 }
 
 void Presentation::handle_write_to_stream(std::ostream &os) {
