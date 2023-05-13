@@ -3,18 +3,19 @@ NAME=kronemar
 CMNFLAGS=
 
 CXX=g++
-CXXFLAGS=-std=c++17 -c -O2
+CXXFLAGS=-std=c++17 -c
 
 LD=g++
 LDFLAGS=-lstdc++fs -lpng
 
 ifdef DEBUG
-
 CMNFLAGS+=-fsanitize=address
 CXXFLAGS+=-g -std=c++17 -Wall -Wextra -Werror -Wpedantic -Weffc++ -Wshadow -Wconversion -Wsign-conversion \
           -Wfloat-equal -Wunused -Wuninitialized -Woverloaded-virtual -Wformat -Wmissing-declarations \
           -Wcast-qual -Wnull-dereference
-
+endif
+ifdef OPTIMIZE
+CXXFLAGS+=-O2
 endif
 
 TARGET=$(NAME)
