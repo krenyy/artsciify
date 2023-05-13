@@ -394,7 +394,7 @@ std::optional<long> Presentation::read_integer() const {
   size_t selected;
   size_t pos;
   try {
-    selected = std::stoul(input, &pos);
+    selected = std::stol(input, &pos);
   } catch (const std::exception &) {
     return std::nullopt;
   }
