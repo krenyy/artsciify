@@ -3,6 +3,7 @@
 #include "png.h"
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <iostream>
 
 Presentation::Presentation(Config cfg,
@@ -77,117 +78,26 @@ void Presentation::start() {
 }
 
 void Presentation::handle_input() {
+  static const std::unordered_map<std::string, std::function<void()>>
+      choice_map = {
+          {"p", std::bind(&Presentation::handle_print, this)},
+          {"prev", std::bind(&Presentation::handle_previous, this)},
+          {"next", std::bind(&Presentation::handle_next, this)},
+          {"s", std::bind(&Presentation::handle_style, this)},
+          {"f", std::bind(&Presentation::handle_filter, this)},
+          {"w", std::bind(&Presentation::handle_write, this)},
+          {"q", std::bind(&Presentation::handle_quit, this)},
+      };
+
   print_status();
 
   std::string input = read_input();
   std::cerr << std::endl;
 
-  if (input == "p") {
-    handle_print();
-  } else if (input == "prev") {
-    handle_previous();
-  } else if (input == "next") {
-    handle_next();
-  } else if (input == "s") {
-    handle_style();
-  } else if (input == "f") {
-    handle_filter();
-  } else if (input == "w") {
-    std::cerr << "select write destination:\n";
-    std::cerr << "  std[o]ut\n";
-    std::cerr << "  [f]ile\n";
-    std::cerr << ": ";
-
-    input = read_input();
-    std::cerr << std::endl;
-
-    if (input == "o") {
-      for (const auto &[_, pipeline] : pipelines.at(current_image)) {
-        pipeline->apply(images[current_image]);
-      }
-      std::cout << config.styles.at(current_style[current_image])
-                       .print(images[current_image])
-                << std::endl;
-      ssize_t cur_img = static_cast<ssize_t>(current_image);
-      paths.erase(paths.begin() + cur_img);
-      images.erase(images.begin() + cur_img);
-      previews.erase(previews.begin() + cur_img);
-      pipelines.erase(pipelines.begin() + cur_img);
-      current_style.erase(current_style.begin() + cur_img);
-      std::cerr << "written successfully!" << std::endl;
-      if (current_image == images.size()) {
-        --current_image;
-      }
-      return;
-    }
-    if (input == "f") {
-      std::filesystem::path dst(paths.at(current_image));
-      dst.replace_extension(".txt");
-
-      std::cerr << "type in a file path (default is " << dst << "): ";
-
-      input = read_input();
-      std::cerr << std::endl;
-
-      if (input != "") {
-        dst = input;
-      }
-      if (std::filesystem::exists(dst) &&
-          !std::filesystem::is_regular_file(dst)) {
-        std::cerr << "path already exists and is not a regular file!"
-                  << std::endl;
-        return;
-      }
-      if (std::filesystem::exists(dst) &&
-          std::filesystem::is_regular_file(dst)) {
-        for (;;) {
-          std::cerr
-              << "file already exists, do you want to overwrite it? [y/n]: ";
-
-          input = read_input();
-
-          if (input == "y") {
-            break;
-          }
-          if (input == "n") {
-            std::cerr << "\naborted!" << std::endl;
-            return;
-          }
-        }
-      }
-
-      for (const auto &[_, pipeline] : pipelines.at(current_image)) {
-        pipeline->apply(images[current_image]);
-      }
-      std::ofstream ofs(dst);
-      if (!ofs.good()) {
-        std::cerr << "\ncouldn't open file (either inaccessible directory, "
-                     "or permission denied!)"
-                  << std::endl;
-        return;
-      }
-      ofs << config.styles.at(current_style[current_image])
-                 .print(images[current_image])
-          << std::endl;
-      ssize_t cur_img = static_cast<ssize_t>(current_image);
-      paths.erase(paths.begin() + cur_img);
-      images.erase(images.begin() + cur_img);
-      previews.erase(previews.begin() + cur_img);
-      pipelines.erase(pipelines.begin() + cur_img);
-      current_style.erase(current_style.begin() + cur_img);
-      std::cerr << dst << " written successfully!" << std::endl;
-      if (current_image == images.size()) {
-        --current_image;
-      }
-      return;
-    }
-    std::cerr << "wrong option!" << std::endl;
-    return;
-  } else if (input == "q") {
-    handle_quit();
-  } else {
+  if (choice_map.count(input) == 0) {
     std::cerr << "invalid option: " << input << std::endl;
   }
+  choice_map.at(input)();
 }
 
 void Presentation::handle_print() const {
@@ -242,6 +152,17 @@ void Presentation::handle_style() {
 }
 
 void Presentation::handle_filter() {
+  static const std::unordered_map<
+      std::string,
+      std::function<void(std::vector<std::pair<
+                             std::string, std::shared_ptr<FilterPipeline>>> &)>>
+      choice_map = {
+          {"a", std::bind(&Presentation::handle_filter_add, this,
+                          std::placeholders::_1)},
+          {"d", std::bind(&Presentation::handle_filter_del, this,
+                          std::placeholders::_1)},
+      };
+
   std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
       &img_pipeline = pipelines.at(current_image);
 
@@ -260,11 +181,11 @@ void Presentation::handle_filter() {
   std::string input = read_input();
   std::cerr << std::endl;
 
-  if (input == "a") {
-    handle_filter_add(img_pipeline);
-  } else if (!img_pipeline.empty() && input == "d") {
-    handle_filter_del(img_pipeline);
+  if (choice_map.count(input) == 0) {
+    std::cerr << "invalid input" << std::endl;
+    return;
   }
+  choice_map.at(input)(img_pipeline);
 }
 
 void Presentation::handle_filter_add(
@@ -331,6 +252,9 @@ void Presentation::handle_filter_add(
 void Presentation::handle_filter_del(
     std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
         &img_pipeline) {
+  if (img_pipeline.empty()) {
+    return;
+  }
   for (;;) {
     std::cerr << "select a pipeline to delete\n";
     size_t i = 0;
@@ -354,6 +278,90 @@ void Presentation::handle_filter_del(
     img_pipeline.erase(img_pipeline.begin() + static_cast<ssize_t>(selected));
     std::cerr << "deleted pipeline " << pipeline_name << std::endl;
     return;
+  }
+}
+
+void Presentation::handle_write() {
+  static const std::unordered_map<std::string, std::function<void()>>
+      choice_map = {
+          {"o", [this]() { handle_write_to_stream(std::cout); }},
+          {"f", std::bind(&Presentation::handle_write_file, this)},
+      };
+
+  std::cerr << "select write destination:\n";
+  std::cerr << "  std[o]ut\n";
+  std::cerr << "  [f]ile\n";
+  std::cerr << ": ";
+
+  std::string input = read_input();
+  std::cerr << std::endl;
+
+  if (choice_map.count(input) == 0) {
+    std::cerr << "wrong option: " << input << std::endl;
+    return;
+  }
+  choice_map.at(input)();
+}
+
+void Presentation::handle_write_file() {
+  std::filesystem::path dst(paths.at(current_image));
+  dst.replace_extension(".txt");
+
+  std::cerr << "type in a file path (default is " << dst << "): ";
+
+  std::string input = read_input();
+  std::cerr << std::endl;
+
+  if (input != "") {
+    dst = input;
+  }
+  if (std::filesystem::exists(dst) && !std::filesystem::is_regular_file(dst)) {
+    std::cerr << "path already exists and is not a regular file!" << std::endl;
+    return;
+  }
+  if (std::filesystem::exists(dst) && std::filesystem::is_regular_file(dst)) {
+    for (;;) {
+      std::cerr << "file already exists, do you want to overwrite it? [y/n]: ";
+
+      input = read_input();
+
+      if (input == "y") {
+        break;
+      }
+      if (input == "n") {
+        std::cerr << "aborted!" << std::endl;
+        return;
+      }
+    }
+  }
+
+  std::ofstream ofs(dst);
+  if (!ofs.good()) {
+    std::cerr
+        << "couldn't open file (inaccessible directory / permission denied!)"
+        << std::endl;
+    return;
+  }
+
+  handle_write_to_stream(ofs);
+}
+
+void Presentation::handle_write_to_stream(std::ostream &os) {
+  for (const auto &[_, pipeline] : pipelines.at(current_image)) {
+    pipeline->apply(images[current_image]);
+  }
+  os << config.styles.at(current_style[current_image])
+            .print(images[current_image])
+     << std::endl;
+  ssize_t cur_img = static_cast<ssize_t>(current_image);
+  paths.erase(paths.begin() + cur_img);
+  images.erase(images.begin() + cur_img);
+  previews.erase(previews.begin() + cur_img);
+  pipelines.erase(pipelines.begin() + cur_img);
+  current_style.erase(current_style.begin() + cur_img);
+  std::cerr << "written successfully!" << std::endl;
+  if (current_image == images.size()) {
+    --current_image;
   }
 }
 

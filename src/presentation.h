@@ -11,8 +11,20 @@
 class Presentation {
 public:
   Presentation(Config cfg, std::vector<std::filesystem::path> image_paths);
-  void print_status() const;
   void start();
+
+private:
+  Config config;
+  std::vector<std::filesystem::path> paths;
+  std::vector<Image> images;
+  std::vector<Image> previews;
+  std::vector<
+      std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>>
+      pipelines;
+  size_t current_image;
+  std::vector<std::string> current_style;
+
+  void print_status() const;
   void handle_input();
   void handle_print() const;
   void handle_previous();
@@ -25,19 +37,10 @@ public:
   void handle_filter_del(
       std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
           &img_pipeline);
+  void handle_write();
+  void handle_write_file();
+  void handle_write_to_stream(std::ostream &os);
   void handle_quit() const;
   std::string read_input() const;
   std::optional<long> read_integer() const;
-
-private:
-  Config config;
-
-  std::vector<std::filesystem::path> paths;
-  std::vector<Image> images;
-  std::vector<Image> previews;
-  std::vector<
-      std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>>
-      pipelines;
-  size_t current_image;
-  std::vector<std::string> current_style;
 };
