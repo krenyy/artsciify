@@ -43,12 +43,10 @@ private:
   void handle_next();
   void handle_style();
   void handle_filter();
-  void handle_filter_add(
-      std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
-          &img_pipeline);
-  void handle_filter_del(
-      std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
-          &img_pipeline);
+  void handle_filter_add();
+  void handle_filter_add_single(const std::string &pipeline_name);
+  void handle_filter_add_all(const std::string &pipeline_name);
+  void handle_filter_del();
   void handle_write();
   void handle_write_file();
   void handle_write_to_stream(std::ostream &os);

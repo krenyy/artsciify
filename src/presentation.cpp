@@ -155,18 +155,13 @@ void Presentation::handle_style() {
 }
 
 void Presentation::handle_filter() {
-  static const std::unordered_map<
-      std::string,
-      std::function<void(std::vector<std::pair<
-                             std::string, std::shared_ptr<FilterPipeline>>> &)>>
+  static const std::unordered_map<std::string, std::function<void()>>
       choice_map = {
-          {"a", std::bind(&Presentation::handle_filter_add, this,
-                          std::placeholders::_1)},
-          {"d", std::bind(&Presentation::handle_filter_del, this,
-                          std::placeholders::_1)},
+          {"a", std::bind(&Presentation::handle_filter_add, this)},
+          {"d", std::bind(&Presentation::handle_filter_del, this)},
       };
 
-  std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
+  const std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
       &img_pipeline = pipelines.at(current_image);
 
   std::cerr << "filter pipelines:\n";
@@ -188,14 +183,20 @@ void Presentation::handle_filter() {
     std::cerr << "invalid input" << std::endl;
     return;
   }
-  choice_map.at(input)(img_pipeline);
+  choice_map.at(input)();
 }
 
-void Presentation::handle_filter_add(
-    std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
-        &img_pipeline) {
-  std::cerr << "select a filter pipeline:\n";
+void Presentation::handle_filter_add() {
+  static const std::unordered_map<std::string,
+                                  std::function<void(const std::string &)>>
+      choice_map = {
+          {"s", std::bind(&Presentation::handle_filter_add_single, this,
+                          std::placeholders::_1)},
+          {"a", std::bind(&Presentation::handle_filter_add_all, this,
+                          std::placeholders::_1)},
+      };
 
+  std::cerr << "select a filter pipeline:\n";
   std::vector<std::string> pipeline_names(config.pipelines.size());
   size_t i = 0;
   for (const auto &[name, _] : config.pipelines) {
@@ -205,6 +206,7 @@ void Presentation::handle_filter_add(
   std::cerr << ": ";
 
   auto selected_opt = read_integer();
+  std::cerr << std::endl;
   if (!selected_opt.has_value()) {
     std::cerr << "invalid input" << std::endl;
     return;
@@ -216,7 +218,19 @@ void Presentation::handle_filter_add(
     return;
   }
 
-  std::string pipeline_name = pipeline_names[selected];
+  std::cerr << "apply for [s]ingle image, [a]ll images: " << std::endl;
+  std::string input = read_input();
+  if (choice_map.count(input) == 0) {
+    std::cerr << "invalid input" << std::endl;
+    return;
+  }
+
+  choice_map.at(input)(pipeline_names[selected]);
+}
+
+void Presentation::handle_filter_add_single(const std::string &pipeline_name) {
+  std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
+      &img_pipeline = pipelines[current_image];
   std::shared_ptr<FilterPipeline> pipeline = config.pipelines.at(pipeline_name);
 
   if (img_pipeline.empty()) {
@@ -227,7 +241,7 @@ void Presentation::handle_filter_add(
 
   for (;;) {
     std::cerr << "select a position to insert the pipeline at\n";
-    i = 0;
+    size_t i = 0;
     for (const auto &[name, _] : img_pipeline) {
       std::cerr << "  " << i << ". " << name << '\n';
       ++i;
@@ -235,12 +249,12 @@ void Presentation::handle_filter_add(
     std::cerr << "  [" << i << ".] \n";
     std::cerr << ": ";
 
-    selected_opt = read_integer();
+    auto selected_opt = read_integer();
     if (!selected_opt.has_value()) {
       std::cerr << "invalid input" << std::endl;
       return;
     }
-    selected = static_cast<size_t>(std::move(*selected_opt));
+    size_t selected = static_cast<size_t>(std::move(*selected_opt));
 
     if (selected > img_pipeline.size()) {
       continue;
@@ -250,12 +264,23 @@ void Presentation::handle_filter_add(
     std::cerr << "added filter " << pipeline_name << std::endl;
     return;
   }
-  return;
 }
 
-void Presentation::handle_filter_del(
-    std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
-        &img_pipeline) {
+void Presentation::handle_filter_add_all(const std::string &pipeline_name) {
+  std::shared_ptr<FilterPipeline> pipeline = config.pipelines.at(pipeline_name);
+
+  for (auto &img_pipeline : pipelines) {
+    img_pipeline.emplace_back(pipeline_name, pipeline);
+  }
+
+  std::cerr << "added filter " << pipeline_name << " to all images"
+            << std::endl;
+}
+
+void Presentation::handle_filter_del() {
+  std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
+      &img_pipeline = pipelines[current_image];
+
   if (img_pipeline.empty()) {
     std::cerr << "invalid input" << std::endl;
     return;
