@@ -50,6 +50,24 @@ doc:
 	doxygen
 	cp -r assets doc
 
+zip:
+	rm -rf $(TARGET) $(TARGET).zip
+	mkdir $(TARGET)
+	cp -r \
+		assets \
+		examples \
+		src \
+		.clangd \
+		.gitignore \
+		Doxyfile \
+		Makefile \
+		prohlaseni.txt \
+		README.md \
+		zadani.txt \
+		$(TARGET)
+	zip -r $(TARGET).zip $(TARGET)
+	rm -rf $(TARGET)
+
 run: compile
 	./$(TARGET)
 
