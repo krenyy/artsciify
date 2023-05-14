@@ -15,3 +15,8 @@ void Rotate::apply(Image &img) const {
   }
   img = new_image;
 }
+void Rotate::get_final_dimensions(size_t &width, size_t &height,
+                                  size_t &max_width, size_t &max_height) const {
+  std::swap(width, height);
+  std::swap(max_width, max_height);
+}

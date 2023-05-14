@@ -30,18 +30,20 @@ void Presentation::print_status() const {
             << current_image + 1 << '/' << images.size() << ")" << std::endl;
   std::cerr << "image dimensions: " << images[current_image].width() << 'x'
             << images[current_image].height() << std::endl;
-  if (images[current_image].width() != previews[current_image].width() ||
-      images[current_image].height() != previews[current_image].height()) {
-    std::cerr << "preview dimensions: " << previews[current_image].width()
-              << 'x' << previews[current_image].height() << std::endl;
-  }
+  Image preview_img = previews[current_image];
   size_t final_width = images[current_image].width();
   size_t final_height = images[current_image].height();
   size_t max_width = final_width;
   size_t max_height = final_height;
   for (const auto &[_, pipeline] : pipelines[current_image]) {
+    pipeline->apply_without_scaling(preview_img);
     pipeline->get_final_dimensions(final_width, final_height, max_width,
                                    max_height);
+  }
+  if (images[current_image].width() != preview_img.width() ||
+      images[current_image].height() != preview_img.height()) {
+    std::cerr << "preview dimensions: " << preview_img.width() << 'x'
+              << preview_img.height() << std::endl;
   }
   std::cerr << "maximum dimensions during the pipeline application: "
             << max_width << 'x' << max_height << std::endl;
