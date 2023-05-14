@@ -394,15 +394,15 @@ std::string Presentation::read_input() const {
 std::optional<long> Presentation::read_integer() const {
   std::string input = read_input();
   size_t input_size = input.size();
-  size_t selected;
+  long n;
   size_t pos;
   try {
-    selected = std::stol(input, &pos);
+    n = std::stol(input, &pos);
   } catch (const std::exception &) {
     return std::nullopt;
   }
   if (pos != input_size) {
     return std::nullopt;
   }
-  return selected;
+  return n;
 }
