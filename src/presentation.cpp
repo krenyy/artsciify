@@ -213,6 +213,7 @@ void Presentation::handle_filter_add(
 
   if (selected >= pipeline_names.size()) {
     std::cerr << "invalid index" << std::endl;
+    return;
   }
 
   std::string pipeline_name = pipeline_names[selected];
