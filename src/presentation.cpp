@@ -257,6 +257,7 @@ void Presentation::handle_filter_del(
     std::vector<std::pair<std::string, std::shared_ptr<FilterPipeline>>>
         &img_pipeline) {
   if (img_pipeline.empty()) {
+    std::cerr << "invalid input" << std::endl;
     return;
   }
   for (;;) {
