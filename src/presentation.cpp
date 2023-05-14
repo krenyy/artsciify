@@ -98,6 +98,7 @@ void Presentation::handle_input() {
 
   if (choice_map.count(input) == 0) {
     std::cerr << "invalid option: " << input << std::endl;
+    return;
   }
   choice_map.at(input)();
 }
