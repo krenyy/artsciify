@@ -48,6 +48,7 @@ compile: $(TARGET)
 
 doc:
 	doxygen
+	cp -r assets doc
 
 run: compile
 	./$(TARGET)
