@@ -1,3 +1,5 @@
+### If you're not on <https://gitlab.com/krenyy/artsciify>, then you're on a mirror.
+
 # artsciify
 
 A program for applying filters to images on the command line.
