@@ -1,14 +1,16 @@
-### If you're not on <https://gitlab.com/krenyy/artsciify>, then you're on a mirror.
+### If you're not on <https://git.kroner.dev/kreny/artsciify>, then you're on a mirror.
 
 # artsciify
 
 A program for applying filters to images on the command line.
 
-Supports printing the resulting image in various styles to both standard output or a file.
+Supports printing the resulting image in various styles to both standard output
+or a file.
 
 ### Usage
 
-The program expects a file named `artsciify.conf` to be present in the program directory.
+The program expects a file named `artsciify.conf` to be present in the program
+directory.
 
 You can run it using `./artsciify <image> [<image> ...]`
 
